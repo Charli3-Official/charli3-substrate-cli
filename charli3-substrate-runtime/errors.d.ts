@@ -10,189 +10,189 @@ export interface ChainErrors<Rv extends RpcVersion>
   extends GenericChainErrors<Rv> {
   /**
    * Pallet `System`'s errors
-   **/
+   */
   system: {
     /**
      * The name of specification does not match between the current runtime
      * and the new runtime.
-     **/
+     */
     InvalidSpecName: GenericPalletError<Rv>;
 
     /**
      * The specification version is not allowed to decrease between the current runtime
      * and the new runtime.
-     **/
+     */
     SpecVersionNeedsToIncrease: GenericPalletError<Rv>;
 
     /**
      * Failed to extract the runtime version from the new runtime.
      *
      * Either calling `Core_version` or decoding `RuntimeVersion` failed.
-     **/
+     */
     FailedToExtractRuntimeVersion: GenericPalletError<Rv>;
 
     /**
      * Suicide called when the account has non-default composite data.
-     **/
+     */
     NonDefaultComposite: GenericPalletError<Rv>;
 
     /**
      * There is a non-zero reference count preventing the account from being purged.
-     **/
+     */
     NonZeroRefCount: GenericPalletError<Rv>;
 
     /**
      * The origin filter prevent the call to be dispatched.
-     **/
+     */
     CallFiltered: GenericPalletError<Rv>;
 
     /**
      * A multi-block migration is ongoing and prevents the current code from being replaced.
-     **/
+     */
     MultiBlockMigrationsOngoing: GenericPalletError<Rv>;
 
     /**
      * No upgrade authorized.
-     **/
+     */
     NothingAuthorized: GenericPalletError<Rv>;
 
     /**
      * The submitted code is not authorized.
-     **/
+     */
     Unauthorized: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
-     **/
+     */
     [error: string]: GenericPalletError<Rv>;
   };
   /**
    * Pallet `Grandpa`'s errors
-   **/
+   */
   grandpa: {
     /**
      * Attempt to signal GRANDPA pause when the authority set isn't live
      * (either paused or already pending pause).
-     **/
+     */
     PauseFailed: GenericPalletError<Rv>;
 
     /**
      * Attempt to signal GRANDPA resume when the authority set isn't paused
      * (either live or already pending resume).
-     **/
+     */
     ResumeFailed: GenericPalletError<Rv>;
 
     /**
      * Attempt to signal GRANDPA change with one already pending.
-     **/
+     */
     ChangePending: GenericPalletError<Rv>;
 
     /**
      * Cannot signal forced change so soon after last.
-     **/
+     */
     TooSoon: GenericPalletError<Rv>;
 
     /**
      * A key ownership proof provided as part of an equivocation report is invalid.
-     **/
+     */
     InvalidKeyOwnershipProof: GenericPalletError<Rv>;
 
     /**
      * An equivocation proof provided as part of an equivocation report is invalid.
-     **/
+     */
     InvalidEquivocationProof: GenericPalletError<Rv>;
 
     /**
      * A given equivocation report is valid but already previously reported.
-     **/
+     */
     DuplicateOffenceReport: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
-     **/
+     */
     [error: string]: GenericPalletError<Rv>;
   };
   /**
    * Pallet `Balances`'s errors
-   **/
+   */
   balances: {
     /**
      * Vesting balance too high to send value.
-     **/
+     */
     VestingBalance: GenericPalletError<Rv>;
 
     /**
      * Account liquidity restrictions prevent withdrawal.
-     **/
+     */
     LiquidityRestrictions: GenericPalletError<Rv>;
 
     /**
      * Balance too low to send value.
-     **/
+     */
     InsufficientBalance: GenericPalletError<Rv>;
 
     /**
      * Value too low to create account due to existential deposit.
-     **/
+     */
     ExistentialDeposit: GenericPalletError<Rv>;
 
     /**
      * Transfer/payment would kill account.
-     **/
+     */
     Expendability: GenericPalletError<Rv>;
 
     /**
      * A vesting schedule already exists for this account.
-     **/
+     */
     ExistingVestingSchedule: GenericPalletError<Rv>;
 
     /**
      * Beneficiary account must pre-exist.
-     **/
+     */
     DeadAccount: GenericPalletError<Rv>;
 
     /**
      * Number of named reserves exceed `MaxReserves`.
-     **/
+     */
     TooManyReserves: GenericPalletError<Rv>;
 
     /**
      * Number of holds exceed `VariantCountOf<T::RuntimeHoldReason>`.
-     **/
+     */
     TooManyHolds: GenericPalletError<Rv>;
 
     /**
      * Number of freezes exceed `MaxFreezes`.
-     **/
+     */
     TooManyFreezes: GenericPalletError<Rv>;
 
     /**
      * The issuance cannot be modified since it is already deactivated.
-     **/
+     */
     IssuanceDeactivated: GenericPalletError<Rv>;
 
     /**
      * The delta cannot be zero.
-     **/
+     */
     DeltaZero: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
-     **/
+     */
     [error: string]: GenericPalletError<Rv>;
   };
   /**
    * Pallet `Sudo`'s errors
-   **/
+   */
   sudo: {
     /**
      * Sender must be the Sudo account.
-     **/
+     */
     RequireSudo: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
-     **/
+     */
     [error: string]: GenericPalletError<Rv>;
   };
 }

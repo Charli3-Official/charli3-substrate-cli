@@ -3,40 +3,40 @@
 import type { GenericChainConsts, RpcVersion } from "dedot/types";
 import type { RuntimeVersion } from "dedot/codecs";
 import type {
-  FrameSystemLimitsBlockWeights,
   FrameSystemLimitsBlockLength,
+  FrameSystemLimitsBlockWeights,
   SpWeightsRuntimeDbWeight,
-} from "./types.js";
+} from "./types.d.ts";
 
 export interface ChainConsts<Rv extends RpcVersion>
   extends GenericChainConsts<Rv> {
   /**
    * Pallet `System`'s constants
-   **/
+   */
   system: {
     /**
      * Block & extrinsics weights: base values and limits.
-     **/
+     */
     blockWeights: FrameSystemLimitsBlockWeights;
 
     /**
      * The maximum length of a block (in bytes).
-     **/
+     */
     blockLength: FrameSystemLimitsBlockLength;
 
     /**
      * Maximum number of block number to block hash mappings to keep (oldest pruned first).
-     **/
+     */
     blockHashCount: number;
 
     /**
      * The weight of runtime database operations the runtime can invoke.
-     **/
+     */
     dbWeight: SpWeightsRuntimeDbWeight;
 
     /**
      * Get the chain's in-code version.
-     **/
+     */
     version: RuntimeVersion;
 
     /**
@@ -45,17 +45,17 @@ export interface ChainConsts<Rv extends RpcVersion>
      * This replaces the "ss58Format" property declared in the chain spec. Reason is
      * that the runtime should know about the prefix in order to make use of it as
      * an identifier of the chain.
-     **/
+     */
     ss58Prefix: number;
 
     /**
      * Generic pallet constant
-     **/
+     */
     [name: string]: any;
   };
   /**
    * Pallet `Timestamp`'s constants
-   **/
+   */
   timestamp: {
     /**
      * The minimum period between blocks.
@@ -64,43 +64,43 @@ export interface ChainConsts<Rv extends RpcVersion>
      * apparatus provides. Your chosen consensus system will generally work with this to
      * determine a sensible block time. For example, in the Aura pallet it will be double this
      * period on default settings.
-     **/
+     */
     minimumPeriod: bigint;
 
     /**
      * Generic pallet constant
-     **/
+     */
     [name: string]: any;
   };
   /**
    * Pallet `Aura`'s constants
-   **/
+   */
   aura: {
     /**
      * The slot duration Aura should run with, expressed in milliseconds.
      * The effective value of this type should not change while the chain is running.
      *
      * For backwards compatibility either use [`MinimumPeriodTimesTwo`] or a const.
-     **/
+     */
     slotDuration: bigint;
 
     /**
      * Generic pallet constant
-     **/
+     */
     [name: string]: any;
   };
   /**
    * Pallet `Grandpa`'s constants
-   **/
+   */
   grandpa: {
     /**
      * Max Authorities in use
-     **/
+     */
     maxAuthorities: number;
 
     /**
      * The maximum number of nominators for each validator.
-     **/
+     */
     maxNominators: number;
 
     /**
@@ -110,17 +110,17 @@ export interface ChainConsts<Rv extends RpcVersion>
      * value should relate to the bonding duration of whatever staking system is
      * being used (if any). If equivocation handling is not enabled then this value
      * can be zero.
-     **/
+     */
     maxSetIdSessionEntries: bigint;
 
     /**
      * Generic pallet constant
-     **/
+     */
     [name: string]: any;
   };
   /**
    * Pallet `Balances`'s constants
-   **/
+   */
   balances: {
     /**
      * The minimum amount required to keep an account open. MUST BE GREATER THAN ZERO!
@@ -131,7 +131,7 @@ export interface ChainConsts<Rv extends RpcVersion>
      * behaviour if you set this to zero.
      *
      * Bottom line: Do yourself a favour and make it at least one!
-     **/
+     */
     existentialDeposit: bigint;
 
     /**
@@ -139,42 +139,42 @@ export interface ChainConsts<Rv extends RpcVersion>
      * Not strictly enforced, but used for weight estimation.
      *
      * Use of locks is deprecated in favour of freezes. See `https://github.com/paritytech/substrate/pull/12951/`
-     **/
+     */
     maxLocks: number;
 
     /**
      * The maximum number of named reserves that can exist on an account.
      *
      * Use of reserves is deprecated in favour of holds. See `https://github.com/paritytech/substrate/pull/12951/`
-     **/
+     */
     maxReserves: number;
 
     /**
      * The maximum number of individual freeze locks that can exist on an account at any time.
-     **/
+     */
     maxFreezes: number;
 
     /**
      * Generic pallet constant
-     **/
+     */
     [name: string]: any;
   };
   /**
    * Pallet `Sudo`'s constants
-   **/
+   */
   sudo: {
     /**
      * Generic pallet constant
-     **/
+     */
     [name: string]: any;
   };
   /**
    * Pallet `Oracle`'s constants
-   **/
+   */
   oracle: {
     /**
      * Generic pallet constant
-     **/
+     */
     [name: string]: any;
   };
 }
