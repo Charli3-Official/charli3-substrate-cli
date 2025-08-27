@@ -1,4 +1,5 @@
 import { DedotClient, WsProvider } from "dedot";
+import { u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import type {
@@ -17,6 +18,7 @@ async function main(): Promise<void> {
   const alice = keyring.addFromUri(
     "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
   );
+  console.log("Alice pk", u8aToHex(alice.publicKey));
 
   let oracleConfig = await getCurrentConfig(client);
   console.log("Oracle config:", oracleConfig);
@@ -27,7 +29,7 @@ async function main(): Promise<void> {
   // 6. Sign + send
   const unsub = await client.tx.oracle
     .sudoSetConfig(oracleConfig)
-    .signAndSend(alice, async ({ status }) => {
+    .signAndSend(alice, async ({ status, dispatchError, dispatchInfo }) => {
       console.log("Transaction status", status.type);
       if (status.type === "BestChainBlockIncluded") {
         console.log(`Transaction is included in best block`);
@@ -39,10 +41,13 @@ async function main(): Promise<void> {
         await unsub();
       }
       await new Promise((resolve) => setTimeout(resolve, 3000));
-      console.log("Transaction status", status.type);
+      console.log("Transaction status", status);
+      console.log("dispatchError", dispatchError);
+      console.log("dispatchInfo", dispatchInfo);
     });
 
   // 7. Query config
+  await new Promise((resolve) => setTimeout(resolve, 3000));
   oracleConfig = await getCurrentConfig(client);
   console.log("Oracle config:", oracleConfig);
 

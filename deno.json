@@ -4,6 +4,7 @@
   },
   "imports": {
     "@polkadot/keyring": "npm:@polkadot/keyring@^13.5.6",
+    "@polkadot/util": "npm:@polkadot/util@^13.5.6",
     "@polkadot/util-crypto": "npm:@polkadot/util-crypto@^13.5.6",
     "@std/assert": "jsr:@std/assert@1",
     "dedot": "npm:dedot@^0.15.2"
