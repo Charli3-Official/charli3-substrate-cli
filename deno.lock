@@ -5,6 +5,7 @@
     "jsr:@std/internal@^1.0.10": "1.0.10",
     "npm:@polkadot/keyring@^13.5.6": "13.5.6_@polkadot+util@13.5.6_@polkadot+util-crypto@13.5.6__@polkadot+util@13.5.6__@polkadot+x-randomvalues@13.5.6___@polkadot+util@13.5.6___@polkadot+wasm-util@7.5.1____@polkadot+util@13.5.6__@polkadot+wasm-util@7.5.1___@polkadot+util@13.5.6",
     "npm:@polkadot/util-crypto@^13.5.6": "13.5.6_@polkadot+util@13.5.6_@polkadot+x-randomvalues@13.5.6__@polkadot+util@13.5.6__@polkadot+wasm-util@7.5.1___@polkadot+util@13.5.6_@polkadot+wasm-util@7.5.1__@polkadot+util@13.5.6",
+    "npm:@polkadot/util@^13.5.6": "13.5.6",
     "npm:dedot@~0.15.2": "0.15.2"
   },
   "jsr": {
@@ -564,6 +565,7 @@
       "jsr:@std/assert@1",
       "npm:@polkadot/keyring@^13.5.6",
       "npm:@polkadot/util-crypto@^13.5.6",
+      "npm:@polkadot/util@^13.5.6",
       "npm:dedot@~0.15.2"
     ]
   }
