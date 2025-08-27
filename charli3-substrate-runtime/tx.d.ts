@@ -3,38 +3,39 @@
 import type {
   GenericChainTx,
   GenericTxCall,
-  ISubmittableExtrinsic,
-  ISubmittableResult,
   IRuntimeTxCall,
-  RpcVersion,
-  RpcV2,
+  ISubmittableExtrinsic,
   ISubmittableExtrinsicLegacy,
+  ISubmittableResult,
+  RpcV2,
+  RpcVersion,
 } from "dedot/types";
 import type {
-  MultiAddressLike,
-  Extrinsic,
-  BytesLike,
-  H256,
   AccountId32Like,
+  BytesLike,
+  Extrinsic,
+  H256,
+  MultiAddressLike,
 } from "dedot/codecs";
 import type {
   Charli3SubstrateRuntimeRuntimeCallLike,
-  SpRuntimeMultiSignature,
   FrameSystemEventRecord,
+  PalletBalancesAdjustmentDirection,
+  PalletOracleConfigNodeTradePair,
+  PalletOracleOracleConfiguration,
+  PalletOracleOracleMessage,
   SpConsensusGrandpaEquivocationProof,
   SpCoreVoid,
-  PalletBalancesAdjustmentDirection,
+  SpRuntimeMultiSignature,
   SpWeightsWeightV2Weight,
-  PalletOracleConfigNodeTradePair,
-  PalletOracleOracleMessage,
-  PalletOracleOracleConfiguration,
-} from "./types.js";
+} from "./types.d.ts";
 
 export type ChainSubmittableExtrinsic<
   Rv extends RpcVersion,
   T extends IRuntimeTxCall = Charli3SubstrateRuntimeRuntimeCallLike,
-> = Extrinsic<MultiAddressLike, T, SpRuntimeMultiSignature, any[]> &
-  (Rv extends RpcV2
+> =
+  & Extrinsic<MultiAddressLike, T, SpRuntimeMultiSignature, any[]>
+  & (Rv extends RpcV2
     ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>
     : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord>>);
 
@@ -46,7 +47,7 @@ export interface ChainTx<Rv extends RpcVersion>
   extends GenericChainTx<Rv, TxCall<Rv>> {
   /**
    * Pallet `System`'s transaction calls
-   **/
+   */
   system: {
     /**
      * Make some on-chain remark.
@@ -54,7 +55,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * Can be executed by every `origin`.
      *
      * @param {BytesLike} remark
-     **/
+     */
     remark: GenericTxCall<
       Rv,
       (remark: BytesLike) => ChainSubmittableExtrinsic<
@@ -73,7 +74,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * Set the number of pages in the WebAssembly environment's heap.
      *
      * @param {bigint} pages
-     **/
+     */
     setHeapPages: GenericTxCall<
       Rv,
       (pages: bigint) => ChainSubmittableExtrinsic<
@@ -92,7 +93,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * Set the new runtime code.
      *
      * @param {BytesLike} code
-     **/
+     */
     setCode: GenericTxCall<
       Rv,
       (code: BytesLike) => ChainSubmittableExtrinsic<
@@ -114,7 +115,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * version!
      *
      * @param {BytesLike} code
-     **/
+     */
     setCodeWithoutChecks: GenericTxCall<
       Rv,
       (code: BytesLike) => ChainSubmittableExtrinsic<
@@ -133,7 +134,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * Set some items of storage.
      *
      * @param {Array<[BytesLike, BytesLike]>} items
-     **/
+     */
     setStorage: GenericTxCall<
       Rv,
       (items: Array<[BytesLike, BytesLike]>) => ChainSubmittableExtrinsic<
@@ -152,7 +153,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * Kill some items from storage.
      *
      * @param {Array<BytesLike>} keys
-     **/
+     */
     killStorage: GenericTxCall<
       Rv,
       (keys: Array<BytesLike>) => ChainSubmittableExtrinsic<
@@ -175,7 +176,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {BytesLike} prefix
      * @param {number} subkeys
-     **/
+     */
     killPrefix: GenericTxCall<
       Rv,
       (
@@ -197,7 +198,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * Make some on-chain remark and emit event.
      *
      * @param {BytesLike} remark
-     **/
+     */
     remarkWithEvent: GenericTxCall<
       Rv,
       (remark: BytesLike) => ChainSubmittableExtrinsic<
@@ -219,7 +220,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * This call requires Root origin.
      *
      * @param {H256} codeHash
-     **/
+     */
     authorizeUpgrade: GenericTxCall<
       Rv,
       (codeHash: H256) => ChainSubmittableExtrinsic<
@@ -245,7 +246,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * This call requires Root origin.
      *
      * @param {H256} codeHash
-     **/
+     */
     authorizeUpgradeWithoutChecks: GenericTxCall<
       Rv,
       (codeHash: H256) => ChainSubmittableExtrinsic<
@@ -272,7 +273,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * All origins are allowed.
      *
      * @param {BytesLike} code
-     **/
+     */
     applyAuthorizedUpgrade: GenericTxCall<
       Rv,
       (code: BytesLike) => ChainSubmittableExtrinsic<
@@ -289,12 +290,12 @@ export interface ChainTx<Rv extends RpcVersion>
 
     /**
      * Generic pallet tx call
-     **/
+     */
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
   };
   /**
    * Pallet `Timestamp`'s transaction calls
-   **/
+   */
   timestamp: {
     /**
      * Set the current time.
@@ -318,7 +319,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * - 1 event handler `on_timestamp_set`. Must be `O(1)`.
      *
      * @param {bigint} now
-     **/
+     */
     set: GenericTxCall<
       Rv,
       (now: bigint) => ChainSubmittableExtrinsic<
@@ -335,12 +336,12 @@ export interface ChainTx<Rv extends RpcVersion>
 
     /**
      * Generic pallet tx call
-     **/
+     */
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
   };
   /**
    * Pallet `Grandpa`'s transaction calls
-   **/
+   */
   grandpa: {
     /**
      * Report voter equivocation/misbehavior. This method will verify the
@@ -350,7 +351,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {SpConsensusGrandpaEquivocationProof} equivocationProof
      * @param {SpCoreVoid} keyOwnerProof
-     **/
+     */
     reportEquivocation: GenericTxCall<
       Rv,
       (
@@ -384,7 +385,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {SpConsensusGrandpaEquivocationProof} equivocationProof
      * @param {SpCoreVoid} keyOwnerProof
-     **/
+     */
     reportEquivocationUnsigned: GenericTxCall<
       Rv,
       (
@@ -421,7 +422,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {number} delay
      * @param {number} bestFinalizedBlockNumber
-     **/
+     */
     noteStalled: GenericTxCall<
       Rv,
       (
@@ -441,12 +442,12 @@ export interface ChainTx<Rv extends RpcVersion>
 
     /**
      * Generic pallet tx call
-     **/
+     */
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
   };
   /**
    * Pallet `Balances`'s transaction calls
-   **/
+   */
   balances: {
     /**
      * Transfer some liquid free balance to another account.
@@ -459,7 +460,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {MultiAddressLike} dest
      * @param {bigint} value
-     **/
+     */
     transferAllowDeath: GenericTxCall<
       Rv,
       (
@@ -484,7 +485,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * @param {MultiAddressLike} source
      * @param {MultiAddressLike} dest
      * @param {bigint} value
-     **/
+     */
     forceTransfer: GenericTxCall<
       Rv,
       (
@@ -517,7 +518,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {MultiAddressLike} dest
      * @param {bigint} value
-     **/
+     */
     transferKeepAlive: GenericTxCall<
       Rv,
       (
@@ -554,7 +555,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {MultiAddressLike} dest
      * @param {boolean} keepAlive
-     **/
+     */
     transferAll: GenericTxCall<
       Rv,
       (
@@ -579,7 +580,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {MultiAddressLike} who
      * @param {bigint} amount
-     **/
+     */
     forceUnreserve: GenericTxCall<
       Rv,
       (
@@ -608,7 +609,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * possibility of churn).
      *
      * @param {Array<AccountId32Like>} who
-     **/
+     */
     upgradeAccounts: GenericTxCall<
       Rv,
       (who: Array<AccountId32Like>) => ChainSubmittableExtrinsic<
@@ -630,7 +631,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {MultiAddressLike} who
      * @param {bigint} newFree
-     **/
+     */
     forceSetBalance: GenericTxCall<
       Rv,
       (
@@ -657,7 +658,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {PalletBalancesAdjustmentDirection} direction
      * @param {bigint} delta
-     **/
+     */
     forceAdjustTotalIssuance: GenericTxCall<
       Rv,
       (
@@ -689,7 +690,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {bigint} value
      * @param {boolean} keepAlive
-     **/
+     */
     burn: GenericTxCall<
       Rv,
       (
@@ -709,18 +710,18 @@ export interface ChainTx<Rv extends RpcVersion>
 
     /**
      * Generic pallet tx call
-     **/
+     */
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
   };
   /**
    * Pallet `Sudo`'s transaction calls
-   **/
+   */
   sudo: {
     /**
      * Authenticates the sudo key and dispatches a function call with `Root` origin.
      *
      * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
-     **/
+     */
     sudo: GenericTxCall<
       Rv,
       (
@@ -746,7 +747,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
      * @param {SpWeightsWeightV2Weight} weight
-     **/
+     */
     sudoUncheckedWeight: GenericTxCall<
       Rv,
       (
@@ -772,7 +773,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * key.
      *
      * @param {MultiAddressLike} new_
-     **/
+     */
     setKey: GenericTxCall<
       Rv,
       (new_: MultiAddressLike) => ChainSubmittableExtrinsic<
@@ -795,7 +796,7 @@ export interface ChainTx<Rv extends RpcVersion>
      *
      * @param {MultiAddressLike} who
      * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
-     **/
+     */
     sudoAs: GenericTxCall<
       Rv,
       (
@@ -820,8 +821,7 @@ export interface ChainTx<Rv extends RpcVersion>
      * Permanently removes the sudo key.
      *
      * **This cannot be un-done.**
-     *
-     **/
+     */
     removeKey: GenericTxCall<
       Rv,
       () => ChainSubmittableExtrinsic<
@@ -837,17 +837,16 @@ export interface ChainTx<Rv extends RpcVersion>
 
     /**
      * Generic pallet tx call
-     **/
+     */
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
   };
   /**
    * Pallet `Oracle`'s transaction calls
-   **/
+   */
   oracle: {
     /**
-     *
      * @param {Array<[PalletOracleConfigNodeTradePair, number]>} prices
-     **/
+     */
     storePrices: GenericTxCall<
       Rv,
       (
@@ -867,9 +866,8 @@ export interface ChainTx<Rv extends RpcVersion>
     >;
 
     /**
-     *
      * @param {Array<[PalletOracleOracleMessage, SpRuntimeMultiSignature]>} signatures
-     **/
+     */
     storeSignatures: GenericTxCall<
       Rv,
       (
@@ -891,9 +889,8 @@ export interface ChainTx<Rv extends RpcVersion>
     >;
 
     /**
-     *
      * @param {PalletOracleOracleConfiguration} config
-     **/
+     */
     sudoSetConfig: GenericTxCall<
       Rv,
       (config: PalletOracleOracleConfiguration) => ChainSubmittableExtrinsic<
@@ -910,7 +907,7 @@ export interface ChainTx<Rv extends RpcVersion>
 
     /**
      * Generic pallet tx call
-     **/
+     */
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
   };
 }

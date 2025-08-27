@@ -5,25 +5,25 @@ import type {
   GenericPalletEvent,
   RpcVersion,
 } from "dedot/types";
-import type { DispatchError, AccountId32, H256, Result } from "dedot/codecs";
+import type { AccountId32, DispatchError, H256, Result } from "dedot/codecs";
 import type {
-  FrameSystemDispatchEventInfo,
-  SpConsensusGrandpaAppPublic,
   FrameSupportTokensMiscBalanceStatus,
-  PalletOracleOracleMessage,
-  SpRuntimeMultiSignature,
+  FrameSystemDispatchEventInfo,
   PalletOracleAggregationState,
-} from "./types.js";
+  PalletOracleOracleMessage,
+  SpConsensusGrandpaAppPublic,
+  SpRuntimeMultiSignature,
+} from "./types.d.ts";
 
 export interface ChainEvents<Rv extends RpcVersion>
   extends GenericChainEvents<Rv> {
   /**
    * Pallet `System`'s events
-   **/
+   */
   system: {
     /**
      * An extrinsic completed successfully.
-     **/
+     */
     ExtrinsicSuccess: GenericPalletEvent<
       Rv,
       "System",
@@ -33,7 +33,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * An extrinsic failed.
-     **/
+     */
     ExtrinsicFailed: GenericPalletEvent<
       Rv,
       "System",
@@ -46,12 +46,12 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * `:code` was updated.
-     **/
+     */
     CodeUpdated: GenericPalletEvent<Rv, "System", "CodeUpdated", null>;
 
     /**
      * A new account was created.
-     **/
+     */
     NewAccount: GenericPalletEvent<
       Rv,
       "System",
@@ -61,7 +61,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * An account was reaped.
-     **/
+     */
     KilledAccount: GenericPalletEvent<
       Rv,
       "System",
@@ -71,7 +71,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * On on-chain remark happened.
-     **/
+     */
     Remarked: GenericPalletEvent<
       Rv,
       "System",
@@ -81,7 +81,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * An upgrade was authorized.
-     **/
+     */
     UpgradeAuthorized: GenericPalletEvent<
       Rv,
       "System",
@@ -91,7 +91,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * An invalid authorized upgrade was rejected while trying to apply it.
-     **/
+     */
     RejectedInvalidAuthorizedUpgrade: GenericPalletEvent<
       Rv,
       "System",
@@ -101,16 +101,16 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Generic pallet event
-     **/
+     */
     [prop: string]: GenericPalletEvent<Rv>;
   };
   /**
    * Pallet `Grandpa`'s events
-   **/
+   */
   grandpa: {
     /**
      * New authority set has been applied.
-     **/
+     */
     NewAuthorities: GenericPalletEvent<
       Rv,
       "Grandpa",
@@ -120,26 +120,26 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Current authority set has been paused.
-     **/
+     */
     Paused: GenericPalletEvent<Rv, "Grandpa", "Paused", null>;
 
     /**
      * Current authority set has been resumed.
-     **/
+     */
     Resumed: GenericPalletEvent<Rv, "Grandpa", "Resumed", null>;
 
     /**
      * Generic pallet event
-     **/
+     */
     [prop: string]: GenericPalletEvent<Rv>;
   };
   /**
    * Pallet `Balances`'s events
-   **/
+   */
   balances: {
     /**
      * An account was created with some free balance.
-     **/
+     */
     Endowed: GenericPalletEvent<
       Rv,
       "Balances",
@@ -150,7 +150,7 @@ export interface ChainEvents<Rv extends RpcVersion>
     /**
      * An account was removed whose balance was non-zero but below ExistentialDeposit,
      * resulting in an outright loss.
-     **/
+     */
     DustLost: GenericPalletEvent<
       Rv,
       "Balances",
@@ -160,7 +160,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Transfer succeeded.
-     **/
+     */
     Transfer: GenericPalletEvent<
       Rv,
       "Balances",
@@ -170,7 +170,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * A balance was set by root.
-     **/
+     */
     BalanceSet: GenericPalletEvent<
       Rv,
       "Balances",
@@ -180,7 +180,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some balance was reserved (moved from free to reserved).
-     **/
+     */
     Reserved: GenericPalletEvent<
       Rv,
       "Balances",
@@ -190,7 +190,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some balance was unreserved (moved from reserved to free).
-     **/
+     */
     Unreserved: GenericPalletEvent<
       Rv,
       "Balances",
@@ -201,7 +201,7 @@ export interface ChainEvents<Rv extends RpcVersion>
     /**
      * Some balance was moved from the reserve of the first account to the second account.
      * Final argument indicates the destination balance type.
-     **/
+     */
     ReserveRepatriated: GenericPalletEvent<
       Rv,
       "Balances",
@@ -216,7 +216,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some amount was deposited (e.g. for transaction fees).
-     **/
+     */
     Deposit: GenericPalletEvent<
       Rv,
       "Balances",
@@ -226,7 +226,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some amount was withdrawn from the account (e.g. for transaction fees).
-     **/
+     */
     Withdraw: GenericPalletEvent<
       Rv,
       "Balances",
@@ -236,7 +236,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some amount was removed from the account (e.g. for misbehavior).
-     **/
+     */
     Slashed: GenericPalletEvent<
       Rv,
       "Balances",
@@ -246,7 +246,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some amount was minted into an account.
-     **/
+     */
     Minted: GenericPalletEvent<
       Rv,
       "Balances",
@@ -256,7 +256,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some amount was burned from an account.
-     **/
+     */
     Burned: GenericPalletEvent<
       Rv,
       "Balances",
@@ -266,7 +266,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some amount was suspended from an account (it can be restored later).
-     **/
+     */
     Suspended: GenericPalletEvent<
       Rv,
       "Balances",
@@ -276,7 +276,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some amount was restored into an account.
-     **/
+     */
     Restored: GenericPalletEvent<
       Rv,
       "Balances",
@@ -286,7 +286,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * An account was upgraded.
-     **/
+     */
     Upgraded: GenericPalletEvent<
       Rv,
       "Balances",
@@ -296,12 +296,12 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Total issuance was increased by `amount`, creating a credit to be balanced.
-     **/
+     */
     Issued: GenericPalletEvent<Rv, "Balances", "Issued", { amount: bigint }>;
 
     /**
      * Total issuance was decreased by `amount`, creating a debt to be balanced.
-     **/
+     */
     Rescinded: GenericPalletEvent<
       Rv,
       "Balances",
@@ -311,7 +311,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some balance was locked.
-     **/
+     */
     Locked: GenericPalletEvent<
       Rv,
       "Balances",
@@ -321,7 +321,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some balance was unlocked.
-     **/
+     */
     Unlocked: GenericPalletEvent<
       Rv,
       "Balances",
@@ -331,7 +331,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some balance was frozen.
-     **/
+     */
     Frozen: GenericPalletEvent<
       Rv,
       "Balances",
@@ -341,7 +341,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Some balance was thawed.
-     **/
+     */
     Thawed: GenericPalletEvent<
       Rv,
       "Balances",
@@ -351,7 +351,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * The `TotalIssuance` was forcefully changed.
-     **/
+     */
     TotalIssuanceForced: GenericPalletEvent<
       Rv,
       "Balances",
@@ -361,16 +361,16 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Generic pallet event
-     **/
+     */
     [prop: string]: GenericPalletEvent<Rv>;
   };
   /**
    * Pallet `Sudo`'s events
-   **/
+   */
   sudo: {
     /**
      * A sudo call just took place.
-     **/
+     */
     Sudid: GenericPalletEvent<
       Rv,
       "Sudo",
@@ -378,14 +378,14 @@ export interface ChainEvents<Rv extends RpcVersion>
       {
         /**
          * The result of the call made by the sudo user.
-         **/
+         */
         sudoResult: Result<[], DispatchError>;
       }
     >;
 
     /**
      * The sudo key has been updated.
-     **/
+     */
     KeyChanged: GenericPalletEvent<
       Rv,
       "Sudo",
@@ -393,24 +393,24 @@ export interface ChainEvents<Rv extends RpcVersion>
       {
         /**
          * The old sudo key (if one was previously set).
-         **/
+         */
         old?: AccountId32 | undefined;
 
         /**
          * The new sudo key (if one was set).
-         **/
+         */
         new: AccountId32;
       }
     >;
 
     /**
      * The key was permanently removed.
-     **/
+     */
     KeyRemoved: GenericPalletEvent<Rv, "Sudo", "KeyRemoved", null>;
 
     /**
      * A [sudo_as](Pallet::sudo_as) call just took place.
-     **/
+     */
     SudoAsDone: GenericPalletEvent<
       Rv,
       "Sudo",
@@ -418,19 +418,19 @@ export interface ChainEvents<Rv extends RpcVersion>
       {
         /**
          * The result of the call made by the sudo user.
-         **/
+         */
         sudoResult: Result<[], DispatchError>;
       }
     >;
 
     /**
      * Generic pallet event
-     **/
+     */
     [prop: string]: GenericPalletEvent<Rv>;
   };
   /**
    * Pallet `Oracle`'s events
-   **/
+   */
   oracle: {
     StoredPrices: GenericPalletEvent<
       Rv,
@@ -457,7 +457,7 @@ export interface ChainEvents<Rv extends RpcVersion>
 
     /**
      * Generic pallet event
-     **/
+     */
     [prop: string]: GenericPalletEvent<Rv>;
   };
 }
