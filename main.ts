@@ -19,6 +19,9 @@ async function main(): Promise<void> {
     "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
   );
   console.log("Alice pk", u8aToHex(alice.publicKey));
+  const sudoKey = await client.query.sudo.key();
+  console.log("Sudo key is  ", sudoKey?.address() ?? "Not found");
+  console.log("Alice account", alice.address);
 
   let oracleConfig = await getCurrentConfig(client);
   console.log("Oracle config:", oracleConfig);
@@ -27,24 +30,29 @@ async function main(): Promise<void> {
   oracleConfig.outliersRange = 160;
 
   // 6. Sign + send
-  const unsub = await client.tx.oracle
-    .sudoSetConfig(oracleConfig)
-    .signAndSend(alice, async ({ status, dispatchError, dispatchInfo }) => {
+  const call = await client.call.oracle.sudoSetConfig(oracleConfig);
+
+  // Wrap it in sudo.sudo
+  const sudoCall = client.tx.sudo.sudo(call);
+
+  const unsub = await sudoCall.signAndSend(
+    alice,
+    async ({ status, dispatchError }) => {
       console.log("Transaction status", status.type);
+      if (dispatchError) {
+        console.log("Dispatch error:", dispatchError.toString());
+      }
       if (status.type === "BestChainBlockIncluded") {
         console.log(`Transaction is included in best block`);
       }
       if (status.type === "Finalized") {
         console.log(
-          `Transaction completed at block hash ${status.value.blockHash}`
+          `Transaction finalized at block hash ${status.value.blockHash}`
         );
         await unsub();
       }
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      console.log("Transaction status", status);
-      console.log("dispatchError", dispatchError);
-      console.log("dispatchInfo", dispatchInfo);
-    });
+    }
+  );
 
   // 7. Query config
   await new Promise((resolve) => setTimeout(resolve, 3000));
