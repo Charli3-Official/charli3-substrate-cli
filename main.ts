@@ -57,7 +57,11 @@ async function main(): Promise<void> {
   );
 
   // Query config
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  const waitTime = Number(client.consts.aura.slotDuration) + 1_000;
+  console.log(
+    `Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`,
+  );
+  await new Promise((resolve) => setTimeout(resolve, waitTime));
   oracleConfig = await getCurrentConfig(client);
   console.log("Oracle config:", oracleConfig);
 
