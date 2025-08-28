@@ -8,11 +8,11 @@ import type {
 } from "./charli3-substrate-runtime/index.d.ts";
 
 async function main(): Promise<void> {
-  // 1. Connect
+  // Connect
   const provider = new WsProvider("ws://127.0.0.1:9944");
   const client = await DedotClient.new<Charli3SubstrateRuntimeApi>(provider);
 
-  // 2. Load an Ed25519 keypair
+  // Load an Ed25519 keypair
   await cryptoWaitReady();
   const keyring = new Keyring({ type: "ed25519" });
   const alice = keyring.addFromUri(
@@ -29,11 +29,11 @@ async function main(): Promise<void> {
   oracleConfig.feedAge = 12;
   oracleConfig.outliersRange = 160;
 
-  // 6. Sign + send
-  const call = await client.call.oracle.sudoSetConfig(oracleConfig);
+  // Sign + send
+  const oracleCall = client.tx.oracle.sudoSetConfig(oracleConfig);
 
   // Wrap it in sudo.sudo
-  const sudoCall = client.tx.sudo.sudo(call);
+  const sudoCall = client.tx.sudo.sudo(oracleCall.call);
 
   const unsub = await sudoCall.signAndSend(
     alice,
@@ -54,12 +54,12 @@ async function main(): Promise<void> {
     }
   );
 
-  // 7. Query config
+  // Query config
   await new Promise((resolve) => setTimeout(resolve, 3000));
   oracleConfig = await getCurrentConfig(client);
   console.log("Oracle config:", oracleConfig);
 
-  // 8. Disconnect
+  // Disconnect
   await provider.disconnect();
 }
 
