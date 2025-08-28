@@ -335,6 +335,10 @@ export type PalletOracleEvent =
   | {
     name: "Status";
     data: { currentState: PalletOracleAggregationState; block: number };
+  }
+  | {
+    name: "UpdatedConfig";
+    data: { newConfig: PalletOracleOracleConfiguration; block: number };
   };
 
 export type PalletOracleOracleMessage = {
@@ -354,6 +358,19 @@ export type PalletOracleAggregationState = {
     [number, number, Array<FixedBytes<32>>] | undefined
   >;
   timestamp: bigint;
+};
+
+export type PalletOracleOracleConfiguration = {
+  minNodesForTrustedAggregation: number;
+  feedAge: number;
+  outliersRange: number;
+  divergency: number;
+  tradePairs: Array<PalletOracleConfigNodeTradePair>;
+};
+
+export type PalletOracleConfigNodeTradePair = {
+  baseCurrency: Bytes;
+  quoteCurrency: Bytes;
 };
 
 export type FrameSystemLastRuntimeUpgradeInfo = {
@@ -1255,19 +1272,6 @@ export type PalletOracleCallLike =
     name: "SudoSetConfig";
     params: { config: PalletOracleOracleConfiguration };
   };
-
-export type PalletOracleConfigNodeTradePair = {
-  baseCurrency: Bytes;
-  quoteCurrency: Bytes;
-};
-
-export type PalletOracleOracleConfiguration = {
-  minNodesForTrustedAggregation: number;
-  feedAge: number;
-  outliersRange: number;
-  divergency: number;
-  tradePairs: Array<PalletOracleConfigNodeTradePair>;
-};
 
 /**
  * Error for the Sudo pallet.
