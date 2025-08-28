@@ -38,6 +38,7 @@ async function main(): Promise<void> {
 
   const unsub = await sudoCall.signAndSend(
     alice,
+    { tip: 0n },
     async ({ status, dispatchError }) => {
       console.log("Transaction status", status.type);
       if (dispatchError) {
