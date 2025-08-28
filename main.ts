@@ -33,7 +33,7 @@ async function main(): Promise<void> {
   const oracleCall = client.tx.oracle.sudoSetConfig(oracleConfig);
 
   // Wrap it in sudo.sudo
-  const sudoCall = client.tx.sudo.sudo(oracleCall.call);
+  const sudoCall = client.tx.sudo.sudoAs(alice.address, oracleCall.call);
 
   const unsub = await sudoCall.signAndSend(
     alice,
