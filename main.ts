@@ -16,7 +16,7 @@ async function main(): Promise<void> {
   await cryptoWaitReady();
   const keyring = new Keyring({ type: "ed25519" });
   const alice = keyring.addFromUri(
-    "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice"
+    "bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice",
   );
   console.log("Alice pk", u8aToHex(alice.publicKey));
   const sudoKey = await client.query.sudo.key();
@@ -48,11 +48,11 @@ async function main(): Promise<void> {
       }
       if (status.type === "Finalized") {
         console.log(
-          `Transaction finalized at block hash ${status.value.blockHash}`
+          `Transaction finalized at block hash ${status.value.blockHash}`,
         );
         await unsub();
       }
-    }
+    },
   );
 
   // Query config
@@ -67,10 +67,10 @@ async function main(): Promise<void> {
 main().catch(console.error);
 
 async function getCurrentConfig(
-  client: DedotClient<Charli3SubstrateRuntimeApi>
+  client: DedotClient<Charli3SubstrateRuntimeApi>,
 ): Promise<PalletOracleOracleConfiguration> {
-  const minNodesForTrustedAggregation =
-    await client.query.oracle.minNodesForTrustedAggregation();
+  const minNodesForTrustedAggregation = await client.query.oracle
+    .minNodesForTrustedAggregation();
   const feedAge = await client.query.oracle.feedAge();
   const outliersRange = await client.query.oracle.outliersRange();
   const divergency = await client.query.oracle.divergency();

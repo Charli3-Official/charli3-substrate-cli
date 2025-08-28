@@ -10,6 +10,7 @@ import type {
   FrameSupportTokensMiscBalanceStatus,
   FrameSystemDispatchEventInfo,
   PalletOracleAggregationState,
+  PalletOracleOracleConfiguration,
   PalletOracleOracleMessage,
   SpConsensusGrandpaAppPublic,
   SpRuntimeMultiSignature,
@@ -453,6 +454,12 @@ export interface ChainEvents<Rv extends RpcVersion>
       "Oracle",
       "Status",
       { currentState: PalletOracleAggregationState; block: number }
+    >;
+    UpdatedConfig: GenericPalletEvent<
+      Rv,
+      "Oracle",
+      "UpdatedConfig",
+      { newConfig: PalletOracleOracleConfiguration; block: number }
     >;
 
     /**
