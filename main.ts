@@ -28,6 +28,7 @@ async function main(): Promise<void> {
   oracleConfig.minNodesForTrustedAggregation = 3;
   oracleConfig.feedAge = 12;
   oracleConfig.outliersRange = 160;
+  oracleConfig.divergency = 65;
 
   // Sign + send
   const oracleCall = client.tx.oracle.sudoSetConfig(oracleConfig);
