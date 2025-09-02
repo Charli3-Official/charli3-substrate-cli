@@ -42,7 +42,10 @@ async function main(): Promise<void> {
     async ({ status, dispatchError }) => {
       console.log("Transaction status", status.type);
       if (dispatchError) {
-        console.log("Dispatch error:", dispatchError.toString());
+        console.log("Dispatch error:", dispatchError.type);
+        if (dispatchError.type === "Module") {
+          console.log("Dispatch module:", dispatchError.value);
+        }
       }
       if (status.type === "BestChainBlockIncluded") {
         console.log(`Transaction is included in best block`);
