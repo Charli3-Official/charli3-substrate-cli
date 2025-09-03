@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+coverage/
+
+# Environment files
+.env
+*.log
+
+# Yarn PnP files
+.pnp.cjs
+.pnp.loader.mjs
+
+# Config files (but not src directory!)
+/*.config.js
+/.prettierrc
