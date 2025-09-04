@@ -47,7 +47,28 @@ async function main(): Promise<void> {
     // Wrap it in sudo.sudo
     const sudoCall = client.tx.sudo.sudo(oracleCall.call);
 
-    const unsub = await sudoCall.signAndSend(
+    // Wrap it in multisig
+    const txMulti = client.tx.multisig.asMulti(
+      2,
+      [bob.address, charlie.address],
+      undefined,
+      sudoCall.call,
+      {
+        refTime: 0n,
+        proofSize: 0n,
+      },
+    );
+    const txEstimation = await txMulti.paymentInfo(alice, { tip: 0n });
+    console.log('tx estimation', txEstimation);
+    const txAlice = client.tx.multisig.asMulti(
+      2,
+      [bob.address, charlie.address],
+      undefined,
+      sudoCall.call,
+      txEstimation.weight,
+    );
+
+    const unsub = await txAlice.signAndSend(
       alice,
       { tip: 0n },
       async ({ status, dispatchError }) => {
@@ -107,7 +128,7 @@ async function getCurrentConfig(
 }
 
 async function useSubstrateClient(
-  user: (client: DedotClient<Charli3SubstrateRuntimeApi>) => Promise<void>,
+  action: (client: DedotClient<Charli3SubstrateRuntimeApi>) => Promise<void>,
 ) {
   let provider;
   try {
@@ -115,7 +136,7 @@ async function useSubstrateClient(
     provider = new WsProvider('ws://127.0.0.1:9944');
     const client = await DedotClient.new<Charli3SubstrateRuntimeApi>(provider);
     // Use
-    await user(client);
+    await action(client);
   } finally {
     // Disconnect
     if (provider) await provider.disconnect();
