@@ -30,6 +30,10 @@ import type {
   SpConsensusGrandpaAppPublic,
   SpConsensusGrandpaEquivocationProof,
   SpRuntimeOpaqueValue,
+  PalletTransactionPaymentRuntimeDispatchInfo,
+  PalletTransactionPaymentFeeDetails,
+  SpWeightsWeightV2Weight,
+  Charli3SubstrateRuntimeRuntimeCallLike,
 } from './types.js';
 
 export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<Rv> {
@@ -403,6 +407,115 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * @param {AccountId32Like} account
      **/
     accountNonce: GenericRuntimeApiMethod<Rv, (account: AccountId32Like) => Promise<number>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod<Rv>;
+  };
+  /**
+   * @runtimeapi: TransactionPaymentApi - 0x37c8bb1350a9a2a8
+   **/
+  transactionPaymentApi: {
+    /**
+     *
+     * @callname: TransactionPaymentApi_query_info
+     * @param {UncheckedExtrinsicLike} uxt
+     * @param {number} len
+     **/
+    queryInfo: GenericRuntimeApiMethod<
+      Rv,
+      (
+        uxt: UncheckedExtrinsicLike,
+        len: number,
+      ) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
+    >;
+
+    /**
+     *
+     * @callname: TransactionPaymentApi_query_fee_details
+     * @param {UncheckedExtrinsicLike} uxt
+     * @param {number} len
+     **/
+    queryFeeDetails: GenericRuntimeApiMethod<
+      Rv,
+      (uxt: UncheckedExtrinsicLike, len: number) => Promise<PalletTransactionPaymentFeeDetails>
+    >;
+
+    /**
+     *
+     * @callname: TransactionPaymentApi_query_weight_to_fee
+     * @param {SpWeightsWeightV2Weight} weight
+     **/
+    queryWeightToFee: GenericRuntimeApiMethod<
+      Rv,
+      (weight: SpWeightsWeightV2Weight) => Promise<bigint>
+    >;
+
+    /**
+     *
+     * @callname: TransactionPaymentApi_query_length_to_fee
+     * @param {number} length
+     **/
+    queryLengthToFee: GenericRuntimeApiMethod<Rv, (length: number) => Promise<bigint>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod<Rv>;
+  };
+  /**
+   * @runtimeapi: TransactionPaymentCallApi - 0xf3ff14d5ab527059
+   **/
+  transactionPaymentCallApi: {
+    /**
+     * Query information of a dispatch class, weight, and fee of a given encoded `Call`.
+     *
+     * @callname: TransactionPaymentCallApi_query_call_info
+     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {number} len
+     **/
+    queryCallInfo: GenericRuntimeApiMethod<
+      Rv,
+      (
+        call: Charli3SubstrateRuntimeRuntimeCallLike,
+        len: number,
+      ) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
+    >;
+
+    /**
+     * Query fee details of a given encoded `Call`.
+     *
+     * @callname: TransactionPaymentCallApi_query_call_fee_details
+     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {number} len
+     **/
+    queryCallFeeDetails: GenericRuntimeApiMethod<
+      Rv,
+      (
+        call: Charli3SubstrateRuntimeRuntimeCallLike,
+        len: number,
+      ) => Promise<PalletTransactionPaymentFeeDetails>
+    >;
+
+    /**
+     * Query the output of the current `WeightToFee` given some input.
+     *
+     * @callname: TransactionPaymentCallApi_query_weight_to_fee
+     * @param {SpWeightsWeightV2Weight} weight
+     **/
+    queryWeightToFee: GenericRuntimeApiMethod<
+      Rv,
+      (weight: SpWeightsWeightV2Weight) => Promise<bigint>
+    >;
+
+    /**
+     * Query the output of the current `LengthToFee` given some input.
+     *
+     * @callname: TransactionPaymentCallApi_query_length_to_fee
+     * @param {number} length
+     **/
+    queryLengthToFee: GenericRuntimeApiMethod<Rv, (length: number) => Promise<bigint>>;
 
     /**
      * Generic runtime api call

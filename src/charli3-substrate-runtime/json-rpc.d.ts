@@ -40,6 +40,8 @@ export type ChainJsonRpcApis<Rv extends RpcVersion> = Pick<
   | 'offchain_localStorageClear'
   | 'offchain_localStorageGet'
   | 'offchain_localStorageSet'
+  | 'payment_queryFeeDetails'
+  | 'payment_queryInfo'
   | 'rpc_methods'
   | 'state_call'
   | 'state_getChildReadProof'

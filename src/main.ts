@@ -15,11 +15,11 @@ async function main(): Promise<void> {
     const alice = keyring.addFromUri(
       'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice',
     );
-    console.log('Alice pk', u8aToHex(alice.publicKey));
+    console.log('Alice pk  ', u8aToHex(alice.publicKey));
     const bob = keyring.addFromUri(
       'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob',
     );
-    console.log('Bob pk', u8aToHex(bob.publicKey));
+    console.log('Bob pk    ', u8aToHex(bob.publicKey));
     const charlie = keyring.addFromUri(
       'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Charlie',
     );
