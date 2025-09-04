@@ -1,40 +1,12 @@
-import { DedotClient, WsProvider } from 'dedot';
-import { u8aToHex } from '@polkadot/util';
-import {
-  createKeyMulti,
-  encodeAddress,
-  cryptoWaitReady,
-  sortAddresses,
-} from '@polkadot/util-crypto';
-import { Keyring } from '@polkadot/keyring';
-import type {
-  Charli3SubstrateRuntimeApi,
-  PalletOracleOracleConfiguration,
-} from './charli3-substrate-runtime/index.js';
+import { sortAddresses } from '@polkadot/util-crypto';
+
+import { getCurrentConfig, useSubstrateClient } from './query.js';
+import { createMultiAddress, loadTestnetWallets } from './crypto.js';
 
 async function main(): Promise<void> {
   await useSubstrateClient(async (client) => {
-    // Load an Ed25519 keypair
-    await cryptoWaitReady();
-    const keyring = new Keyring({ type: 'ed25519' });
-    const alice = keyring.addFromUri(
-      'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice',
-    );
-    console.log('Alice pk  ', u8aToHex(alice.publicKey));
-    const bob = keyring.addFromUri(
-      'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob',
-    );
-    console.log('Bob pk    ', u8aToHex(bob.publicKey));
-    const charlie = keyring.addFromUri(
-      'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Charlie',
-    );
-    console.log('Charlie pk', u8aToHex(charlie.publicKey));
-
-    const signers = [alice.address, bob.address, charlie.address];
-    const threshold = 2;
-    const multiPub = createKeyMulti(signers, threshold);
-    const multiAddr = encodeAddress(multiPub, 42);
-    console.log('Multisig address', multiAddr);
+    const { alice, bob, charlie } = await loadTestnetWallets();
+    const multiAddr = createMultiAddress([alice.address, bob.address, charlie.address], 2);
 
     const sudoKey = await client.query.sudo.key();
     console.log('Sudo address is ', sudoKey?.address() ?? 'Not found');
@@ -153,46 +125,3 @@ async function main(): Promise<void> {
 }
 
 main().catch(console.error);
-
-async function getCurrentConfig(
-  client: DedotClient<Charli3SubstrateRuntimeApi>,
-): Promise<PalletOracleOracleConfiguration> {
-  const minNodesForTrustedAggregation = await client.query.oracle.minNodesForTrustedAggregation();
-  const feedAge = await client.query.oracle.feedAge();
-  const outliersRange = await client.query.oracle.outliersRange();
-  const divergency = await client.query.oracle.divergency();
-  const tradePairs = await client.query.oracle.tradePairs();
-  if (
-    minNodesForTrustedAggregation === undefined ||
-    feedAge === undefined ||
-    outliersRange === undefined ||
-    divergency === undefined ||
-    tradePairs === undefined
-  ) {
-    throw new Error("Couldn't load oracle config");
-  }
-
-  return {
-    minNodesForTrustedAggregation,
-    feedAge,
-    outliersRange,
-    divergency,
-    tradePairs,
-  };
-}
-
-async function useSubstrateClient(
-  action: (client: DedotClient<Charli3SubstrateRuntimeApi>) => Promise<void>,
-) {
-  let provider;
-  try {
-    // Connect
-    provider = new WsProvider('ws://127.0.0.1:9944');
-    const client = await DedotClient.new<Charli3SubstrateRuntimeApi>(provider);
-    // Use
-    await action(client);
-  } finally {
-    // Disconnect
-    if (provider) await provider.disconnect();
-  }
-}
