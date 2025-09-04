@@ -430,6 +430,26 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     [prop: string]: GenericPalletEvent<Rv>;
   };
   /**
+   * Pallet `TransactionPayment`'s events
+   **/
+  transactionPayment: {
+    /**
+     * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+     * has been paid by `who`.
+     **/
+    TransactionFeePaid: GenericPalletEvent<
+      Rv,
+      'TransactionPayment',
+      'TransactionFeePaid',
+      { who: AccountId32; actualFee: bigint; tip: bigint }
+    >;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent<Rv>;
+  };
+  /**
    * Pallet `Oracle`'s events
    **/
   oracle: {

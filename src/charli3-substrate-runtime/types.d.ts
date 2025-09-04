@@ -54,6 +54,7 @@ export type Charli3SubstrateRuntimeRuntimeEvent =
   | { pallet: 'Balances'; palletEvent: PalletBalancesEvent }
   | { pallet: 'Sudo'; palletEvent: PalletSudoEvent }
   | { pallet: 'Multisig'; palletEvent: PalletMultisigEvent }
+  | { pallet: 'TransactionPayment'; palletEvent: PalletTransactionPaymentEvent }
   | { pallet: 'Oracle'; palletEvent: PalletOracleEvent };
 
 /**
@@ -380,6 +381,19 @@ export type PalletMultisigEvent =
     };
 
 export type PalletMultisigTimepoint = { height: number; index: number };
+
+/**
+ * The `Event` enum of this pallet
+ **/
+export type PalletTransactionPaymentEvent =
+  /**
+   * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+   * has been paid by `who`.
+   **/
+  {
+    name: 'TransactionFeePaid';
+    data: { who: AccountId32; actualFee: bigint; tip: bigint };
+  };
 
 /**
  * pallet events
@@ -1761,6 +1775,8 @@ export type PalletMultisigError =
    **/
   | 'AlreadyStored';
 
+export type PalletTransactionPaymentReleases = 'V1Ancient' | 'V2';
+
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
 export type FrameSystemExtensionsCheckSpecVersion = {};
@@ -1841,6 +1857,23 @@ export type SpConsensusSlotsSlotDuration = bigint;
 export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
 
 export type SpRuntimeOpaqueValue = Bytes;
+
+export type PalletTransactionPaymentRuntimeDispatchInfo = {
+  weight: SpWeightsWeightV2Weight;
+  class: FrameSupportDispatchDispatchClass;
+  partialFee: bigint;
+};
+
+export type PalletTransactionPaymentFeeDetails = {
+  inclusionFee?: PalletTransactionPaymentInclusionFee | undefined;
+  tip: bigint;
+};
+
+export type PalletTransactionPaymentInclusionFee = {
+  baseFee: bigint;
+  lenFee: bigint;
+  adjustedWeightFee: bigint;
+};
 
 export type Charli3SubstrateRuntimeRuntimeError =
   | { pallet: 'System'; palletError: FrameSystemError }

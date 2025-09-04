@@ -9,6 +9,7 @@ import type {
   Digest,
   Phase,
   FixedBytes,
+  FixedU128,
 } from 'dedot/codecs';
 import type {
   FrameSystemAccountInfo,
@@ -28,6 +29,7 @@ import type {
   FrameSupportTokensMiscIdAmount,
   FrameSupportTokensMiscIdAmountRuntimeFreezeReason,
   PalletMultisigMultisig,
+  PalletTransactionPaymentReleases,
   PalletOracleConfigNodeTradePair,
   PalletOracleAggregationState,
 } from './types.js';
@@ -469,6 +471,27 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
       (arg: [AccountId32Like, FixedBytes<32>]) => PalletMultisigMultisig | undefined,
       [AccountId32, FixedBytes<32>]
     >;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
+   * Pallet `TransactionPayment`'s storage queries
+   **/
+  transactionPayment: {
+    /**
+     *
+     * @param {Callback<FixedU128> =} callback
+     **/
+    nextFeeMultiplier: GenericStorageQuery<Rv, () => FixedU128>;
+
+    /**
+     *
+     * @param {Callback<PalletTransactionPaymentReleases> =} callback
+     **/
+    storageVersion: GenericStorageQuery<Rv, () => PalletTransactionPaymentReleases>;
 
     /**
      * Generic pallet storage query
