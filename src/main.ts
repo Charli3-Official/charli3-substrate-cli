@@ -1,6 +1,11 @@
 import { DedotClient, WsProvider } from 'dedot';
 import { u8aToHex } from '@polkadot/util';
-import { createKeyMulti, encodeAddress, cryptoWaitReady } from '@polkadot/util-crypto';
+import {
+  createKeyMulti,
+  encodeAddress,
+  cryptoWaitReady,
+  sortAddresses,
+} from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
 import type {
   Charli3SubstrateRuntimeApi,
@@ -48,30 +53,25 @@ async function main(): Promise<void> {
     const sudoCall = client.tx.sudo.sudo(oracleCall.call);
 
     // Wrap it in multisig
-    const txMulti = client.tx.multisig.asMulti(
-      2,
-      [bob.address, charlie.address],
-      undefined,
-      sudoCall.call,
-      {
-        refTime: 0n,
-        proofSize: 0n,
-      },
-    );
+    const exceptAlice = sortAddresses([bob.address, charlie.address], 42);
+    const txMulti = client.tx.multisig.asMulti(2, exceptAlice, undefined, sudoCall.call, {
+      refTime: 0n,
+      proofSize: 0n,
+    });
     const txEstimation = await txMulti.paymentInfo(alice, { tip: 0n });
     console.log('tx estimation', txEstimation);
     const txAlice = client.tx.multisig.asMulti(
       2,
-      [bob.address, charlie.address],
+      exceptAlice,
       undefined,
       sudoCall.call,
       txEstimation.weight,
     );
-
+    let txMultiHash: `0x${string}` | undefined = undefined;
     const unsub = await txAlice.signAndSend(
       alice,
       { tip: 0n },
-      async ({ status, dispatchError }) => {
+      async ({ status, dispatchError, events }) => {
         console.log('Transaction status', status.type);
         if (dispatchError) {
           console.log('Dispatch error:', dispatchError.type);
@@ -82,17 +82,32 @@ async function main(): Promise<void> {
         if (status.type === 'BestChainBlockIncluded') {
           console.log(`Transaction is included in best block`);
         }
+        for (const e of events) {
+          console.log(e);
+          if (e.event.pallet === 'Multisig') {
+            console.log(e.event.palletEvent.data);
+            if (e.event.palletEvent.name === 'NewMultisig') {
+              txMultiHash = e.event.palletEvent.data.callHash;
+              console.log('tx id', txMultiHash);
+            }
+          }
+        }
         if (status.type === 'Finalized') {
           console.log(`Transaction finalized at block hash ${status.value.blockHash}`);
           await unsub();
         }
       },
     );
-
-    // Query config
     const waitTime = Number(client.consts.aura.slotDuration) + 1_000;
     console.log(`Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`);
     await new Promise((resolve) => setTimeout(resolve, waitTime));
+    if (!txMultiHash) {
+      throw new Error('Was not able to submit new multisig');
+    }
+    const multisig = await client.query.multisig.multisigs([multiAddr, txMultiHash]);
+    console.log('multisig tx stored', multisig);
+
+    // Query config
     oracleConfig = await getCurrentConfig(client);
     console.log('Oracle config:', oracleConfig);
   });
