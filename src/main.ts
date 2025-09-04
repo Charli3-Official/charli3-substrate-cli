@@ -1,6 +1,6 @@
 import { DedotClient, WsProvider } from 'dedot';
 import { u8aToHex } from '@polkadot/util';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { createKeyMulti, encodeAddress, cryptoWaitReady } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
 import type {
   Charli3SubstrateRuntimeApi,
@@ -19,9 +19,23 @@ async function main(): Promise<void> {
     'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice',
   );
   console.log('Alice pk', u8aToHex(alice.publicKey));
+  const bob = keyring.addFromUri(
+    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob',
+  );
+  console.log('Bob pk', u8aToHex(bob.publicKey));
+  const charlie = keyring.addFromUri(
+    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Charlie',
+  );
+  console.log('Charlie pk', u8aToHex(charlie.publicKey));
+
+  const signers = [alice.address, bob.address, charlie.address];
+  const threshold = 2;
+  const multiPub = createKeyMulti(signers, threshold);
+  const multiAddr = encodeAddress(multiPub, 42);
+  console.log('Multisig address', multiAddr);
+
   const sudoKey = await client.query.sudo.key();
-  console.log('Sudo key is  ', sudoKey?.address() ?? 'Not found');
-  console.log('Alice account', alice.address);
+  console.log('Sudo address is ', sudoKey?.address() ?? 'Not found');
 
   let oracleConfig = await getCurrentConfig(client);
   console.log('Oracle config:', oracleConfig);
