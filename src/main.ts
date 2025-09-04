@@ -68,7 +68,7 @@ async function main(): Promise<void> {
       txEstimation.weight,
     );
     let txMultiHash: `0x${string}` | undefined = undefined;
-    const unsub = await txAlice.signAndSend(
+    const unsubAlice = await txAlice.signAndSend(
       alice,
       { tip: 0n },
       async ({ status, dispatchError, events }) => {
@@ -94,7 +94,7 @@ async function main(): Promise<void> {
         }
         if (status.type === 'Finalized') {
           console.log(`Transaction finalized at block hash ${status.value.blockHash}`);
-          await unsub();
+          await unsubAlice();
         }
       },
     );
@@ -106,6 +106,45 @@ async function main(): Promise<void> {
     }
     const multisig = await client.query.multisig.multisigs([multiAddr, txMultiHash]);
     console.log('multisig tx stored', multisig);
+    if (!multisig) {
+      throw new Error('Was not able to retrieve multisig');
+    }
+
+    const txBob = client.tx.multisig.asMulti(
+      2,
+      sortAddresses([alice.address, charlie.address], 42),
+      multisig.when,
+      sudoCall.call,
+      txEstimation.weight,
+    );
+    const unsubBob = await txBob.signAndSend(
+      bob,
+      { tip: 0n },
+      async ({ status, dispatchError, events }) => {
+        console.log('Transaction status', status.type);
+        if (dispatchError) {
+          console.log('Dispatch error:', dispatchError.type);
+          if (dispatchError.type === 'Module') {
+            console.log('Dispatch module:', dispatchError.value);
+          }
+        }
+        if (status.type === 'BestChainBlockIncluded') {
+          console.log(`Transaction is included in best block`);
+        }
+        for (const e of events) {
+          console.log(e);
+          if (e.event.pallet === 'Multisig') {
+            console.log(e.event.palletEvent.data);
+          }
+        }
+        if (status.type === 'Finalized') {
+          console.log(`Transaction finalized at block hash ${status.value.blockHash}`);
+          await unsubBob();
+        }
+      },
+    );
+    console.log(`Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`);
+    await new Promise((resolve) => setTimeout(resolve, waitTime));
 
     // Query config
     oracleConfig = await getCurrentConfig(client);
