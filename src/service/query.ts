@@ -3,7 +3,7 @@ import { DedotClient, WsProvider } from 'dedot';
 import type {
   Charli3SubstrateRuntimeApi,
   PalletOracleOracleConfiguration,
-} from './charli3-substrate-runtime/index.js';
+} from '../charli3-substrate-runtime/index.js';
 
 export { getCurrentConfig, useSubstrateClient };
 

@@ -1,7 +1,7 @@
 import { sortAddresses } from '@polkadot/util-crypto';
-
-import { getCurrentConfig, useSubstrateClient } from './query.js';
-import { createMultiAddress, loadTestnetWallets } from './crypto.js';
+import { getCurrentConfig, useSubstrateClient } from './service/query.js';
+import { createMultiAddress, loadTestnetWallets } from './service/crypto.js';
+import { txCallback, waitForTx } from './service/tx.js';
 
 async function main(): Promise<void> {
   await useSubstrateClient(async (client) => {
@@ -40,39 +40,20 @@ async function main(): Promise<void> {
       txEstimation.weight,
     );
     let txMultiHash: `0x${string}` | undefined = undefined;
-    const unsubAlice = await txAlice.signAndSend(
-      alice,
-      { tip: 0n },
-      async ({ status, dispatchError, events }) => {
-        console.log('Transaction status', status.type);
-        if (dispatchError) {
-          console.log('Dispatch error:', dispatchError.type);
-          if (dispatchError.type === 'Module') {
-            console.log('Dispatch module:', dispatchError.value);
+    const unsubAlice = await txAlice.signAndSend(alice, { tip: 0n }, async (result) => {
+      txCallback(result);
+      for (const e of result.events) {
+        if (e.event.pallet === 'Multisig') {
+          console.log(e.event.palletEvent.data);
+          if (e.event.palletEvent.name === 'NewMultisig') {
+            txMultiHash = e.event.palletEvent.data.callHash;
+            console.log('tx id', txMultiHash);
           }
         }
-        if (status.type === 'BestChainBlockIncluded') {
-          console.log(`Transaction is included in best block`);
-        }
-        for (const e of events) {
-          console.log(e);
-          if (e.event.pallet === 'Multisig') {
-            console.log(e.event.palletEvent.data);
-            if (e.event.palletEvent.name === 'NewMultisig') {
-              txMultiHash = e.event.palletEvent.data.callHash;
-              console.log('tx id', txMultiHash);
-            }
-          }
-        }
-        if (status.type === 'Finalized') {
-          console.log(`Transaction finalized at block hash ${status.value.blockHash}`);
-          await unsubAlice();
-        }
-      },
-    );
-    const waitTime = Number(client.consts.aura.slotDuration) + 1_000;
-    console.log(`Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`);
-    await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
+      if (result.status.type === 'Finalized') await unsubAlice();
+    });
+    await waitForTx(client);
     if (!txMultiHash) {
       throw new Error('Was not able to submit new multisig');
     }
@@ -89,34 +70,11 @@ async function main(): Promise<void> {
       sudoCall.call,
       txEstimation.weight,
     );
-    const unsubBob = await txBob.signAndSend(
-      bob,
-      { tip: 0n },
-      async ({ status, dispatchError, events }) => {
-        console.log('Transaction status', status.type);
-        if (dispatchError) {
-          console.log('Dispatch error:', dispatchError.type);
-          if (dispatchError.type === 'Module') {
-            console.log('Dispatch module:', dispatchError.value);
-          }
-        }
-        if (status.type === 'BestChainBlockIncluded') {
-          console.log(`Transaction is included in best block`);
-        }
-        for (const e of events) {
-          console.log(e);
-          if (e.event.pallet === 'Multisig') {
-            console.log(e.event.palletEvent.data);
-          }
-        }
-        if (status.type === 'Finalized') {
-          console.log(`Transaction finalized at block hash ${status.value.blockHash}`);
-          await unsubBob();
-        }
-      },
-    );
-    console.log(`Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`);
-    await new Promise((resolve) => setTimeout(resolve, waitTime));
+    const unsubBob = await txBob.signAndSend(bob, { tip: 0n }, async (result) => {
+      txCallback(result);
+      if (result.status.type === 'Finalized') await unsubBob();
+    });
+    await waitForTx(client);
 
     // Query config
     oracleConfig = await getCurrentConfig(client);
