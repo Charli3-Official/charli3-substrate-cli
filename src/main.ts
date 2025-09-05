@@ -32,12 +32,16 @@ async function main(): Promise<void> {
     });
     const txEstimation = await txMulti.paymentInfo(alice, { tip: 0n });
     console.log('tx estimation', txEstimation);
+    const safeWeight = {
+      refTime: txEstimation.weight.refTime * 2n,
+      proofSize: txEstimation.weight.proofSize * 2n,
+    };
     const txAlice = client.tx.multisig.asMulti(
       2,
       exceptAlice,
       undefined,
       sudoCall.call,
-      txEstimation.weight,
+      safeWeight,
     );
     let txMultiHash: `0x${string}` | undefined = undefined;
     const unsubAlice = await txAlice.signAndSend(alice, { tip: 0n }, async (result) => {
@@ -68,7 +72,7 @@ async function main(): Promise<void> {
       sortAddresses([alice.address, charlie.address], 42),
       multisig.when,
       sudoCall.call,
-      txEstimation.weight,
+      safeWeight,
     );
     const unsubBob = await txBob.signAndSend(bob, { tip: 0n }, async (result) => {
       txCallback(result);
