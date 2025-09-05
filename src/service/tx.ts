@@ -1,0 +1,33 @@
+import type { ISubmittableResult } from 'dedot/types';
+import type { DedotClient } from 'dedot';
+import type { Charli3SubstrateRuntimeApi } from '../charli3-substrate-runtime/index.js';
+
+export { txCallback, waitForTx };
+
+function txCallback<TxResult extends ISubmittableResult = ISubmittableResult>(
+  result: TxResult,
+): void {
+  const { status, dispatchError, events } = result;
+  console.log('Transaction status', status.type);
+  if (dispatchError) {
+    console.log('Dispatch error:', dispatchError.type);
+    if (dispatchError.type === 'Module') {
+      console.log('Dispatch module:', dispatchError.value);
+    }
+  }
+  if (status.type === 'BestChainBlockIncluded') {
+    console.log(`Transaction is included in best block`);
+  }
+  for (const e of events) {
+    console.log(e);
+  }
+  if (status.type === 'Finalized') {
+    console.log(`Transaction finalized at block hash ${status.value.blockHash}`);
+  }
+}
+
+async function waitForTx(client: DedotClient<Charli3SubstrateRuntimeApi>) {
+  const waitTime = Number(client.consts.aura.slotDuration) + 1_000;
+  console.log(`Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`);
+  await new Promise((resolve) => setTimeout(resolve, waitTime));
+}
