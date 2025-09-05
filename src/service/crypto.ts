@@ -3,7 +3,7 @@ import { createKeyMulti, encodeAddress, cryptoWaitReady } from '@polkadot/util-c
 import { Keyring } from '@polkadot/keyring';
 import type { KeyringPair } from '@polkadot/keyring/types';
 
-export type { TestnetWallets };
+export type { TestnetWallets, WalletName };
 export { loadTestnetWallets, createMultiAddress };
 
 interface TestnetWallets {
@@ -13,6 +13,8 @@ interface TestnetWallets {
   readonly dave: KeyringPair;
   readonly eve: KeyringPair;
 }
+
+type WalletName = keyof TestnetWallets;
 
 async function loadTestnetWallets(): Promise<TestnetWallets> {
   await cryptoWaitReady();
