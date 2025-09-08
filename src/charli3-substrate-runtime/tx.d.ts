@@ -29,7 +29,7 @@ import type {
   PalletMultisigTimepoint,
   PalletOracleConfigNodeTradePair,
   PalletOracleOracleMessage,
-  PalletOracleOracleConfiguration,
+  PalletOracleConsensusConfiguration,
 } from './types.js';
 
 export type ChainSubmittableExtrinsic<
@@ -1161,17 +1161,24 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
 
     /**
      *
-     * @param {PalletOracleOracleConfiguration} config
+     * @param {PalletOracleConsensusConfiguration} consensusConfig
+     * @param {Array<[BytesLike, Array<number>]>} channelsToTradePairs
      **/
     sudoSetConfig: GenericTxCall<
       Rv,
-      (config: PalletOracleOracleConfiguration) => ChainSubmittableExtrinsic<
+      (
+        consensusConfig: PalletOracleConsensusConfiguration,
+        channelsToTradePairs: Array<[BytesLike, Array<number>]>,
+      ) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'Oracle';
           palletCall: {
             name: 'SudoSetConfig';
-            params: { config: PalletOracleOracleConfiguration };
+            params: {
+              consensusConfig: PalletOracleConsensusConfiguration;
+              channelsToTradePairs: Array<[BytesLike, Array<number>]>;
+            };
           };
         }
       >

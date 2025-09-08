@@ -417,7 +417,11 @@ export type PalletOracleEvent =
     }
   | {
       name: 'UpdatedConfig';
-      data: { newConfig: PalletOracleOracleConfiguration; block: number };
+      data: {
+        consensusConfig: PalletOracleConsensusConfiguration;
+        channelsToTradePairs: Array<[Bytes, Array<number>]>;
+        block: number;
+      };
     };
 
 export type PalletOracleOracleMessage = {
@@ -437,7 +441,7 @@ export type PalletOracleAggregationState = {
   timestamp: bigint;
 };
 
-export type PalletOracleOracleConfiguration = {
+export type PalletOracleConsensusConfiguration = {
   minNodesForTrustedAggregation: number;
   feedAge: number;
   outliersRange: number;
@@ -1678,7 +1682,10 @@ export type PalletOracleCall =
     }
   | {
       name: 'SudoSetConfig';
-      params: { config: PalletOracleOracleConfiguration };
+      params: {
+        consensusConfig: PalletOracleConsensusConfiguration;
+        channelsToTradePairs: Array<[Bytes, Array<number>]>;
+      };
     };
 
 export type PalletOracleCallLike =
@@ -1694,7 +1701,10 @@ export type PalletOracleCallLike =
     }
   | {
       name: 'SudoSetConfig';
-      params: { config: PalletOracleOracleConfiguration };
+      params: {
+        consensusConfig: PalletOracleConsensusConfiguration;
+        channelsToTradePairs: Array<[BytesLike, Array<number>]>;
+      };
     };
 
 /**

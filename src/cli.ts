@@ -29,7 +29,10 @@ async function startConfigUpdate(walletName: WalletName, configPath: string) {
     console.log('Desired oracle config:', oracleConfig);
 
     // Create update config tx
-    const oracleCall = client.tx.oracle.sudoSetConfig(oracleConfig);
+    const oracleCall = client.tx.oracle.sudoSetConfig(
+      oracleConfig.consensus,
+      oracleConfig.messages,
+    );
     // Wrap it in sudo.sudo
     const sudoCall = client.tx.sudo.sudo(oracleCall.call);
 
@@ -103,7 +106,10 @@ async function signConfigUpdate(
     console.log('Desired oracle config:', oracleConfig);
 
     // Create update config tx
-    const oracleCall = client.tx.oracle.sudoSetConfig(oracleConfig);
+    const oracleCall = client.tx.oracle.sudoSetConfig(
+      oracleConfig.consensus,
+      oracleConfig.messages,
+    );
     // Wrap it in sudo.sudo
     const sudoCall = client.tx.sudo.sudo(oracleCall.call);
 
