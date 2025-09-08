@@ -1,0 +1,19 @@
+multisig:
+  addresses:
+    - 5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu
+    - 5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E
+    - 5DbKjhNLpqX3zqZdNBc9BGb4fHU1cRBaDhJUskrvkwfraDi6
+  threshold: 2
+
+oracleConfig:
+  minNodesForTrustedAggregation: 3
+  feedAge: 12
+  outliersRange: 160
+  divergency: 65
+  tradePairs:
+    - baseCurrency: "ADA"
+      quoteCurrency: "USD"
+    - baseCurrency: "ETH"
+      quoteCurrency: "USD"
+    - baseCurrency: "BTC"
+      quoteCurrency: "USD"
