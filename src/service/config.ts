@@ -1,29 +1,59 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
-import type { PalletOracleOracleConfiguration } from '../charli3-substrate-runtime/types.js';
+import { z } from 'zod';
+import type { Bytes } from 'dedot/codecs';
 
-export { loadCliConfig };
-export type { CliConfig };
+// "bytes" input: human-friendly utf-8 strings
+// we validate as string and later transform into 0x hex
+const BytesSchema = z
+  .string()
+  .min(1)
+  .transform<Bytes>((val) => {
+    if (val.startsWith('0x')) {
+      return val as Bytes; // already hex
+    }
+    const hex = Buffer.from(val, 'utf8').toString('hex');
+    return `0x${hex}` as Bytes;
+  });
 
-interface CliConfig {
-  readonly multisig: {
-    readonly addresses: string[];
-    readonly threshold: number;
-  };
-  readonly oracleConfig: PalletOracleOracleConfiguration;
-}
+const PalletOracleConfigNodeTradePairSchema = z.object({
+  baseCurrency: BytesSchema,
+  quoteCurrency: BytesSchema,
+});
 
-function loadCliConfig(configPath: string): CliConfig {
+const PalletOracleOracleConfigurationSchema = z.object({
+  minNodesForTrustedAggregation: z.number(),
+  feedAge: z.number(),
+  outliersRange: z.number(),
+  divergency: z.number(),
+  tradePairs: z.array(PalletOracleConfigNodeTradePairSchema),
+});
+
+const CliConfigSchema = z.object({
+  multisig: z.object({
+    addresses: z.array(z.string()),
+    threshold: z.number(),
+  }),
+  oracleConfig: PalletOracleOracleConfigurationSchema,
+});
+
+export type CliConfig = z.infer<typeof CliConfigSchema>;
+
+export function loadCliConfig(configPath: string): CliConfig {
   if (!fs.existsSync(configPath)) {
     throw new Error(`Oracle config file not found: ${configPath}`);
   }
 
   try {
     const fileContents = fs.readFileSync(configPath, 'utf8');
-    const config = yaml.load(fileContents) as CliConfig;
+    const parsed = yaml.load(fileContents);
+    const config = CliConfigSchema.parse(parsed);
 
+    console.log('Cli config', config);
     return config;
   } catch (error) {
-    throw new Error(`Failed to load cli config from ${configPath}: ${error}`);
+    throw new Error(
+      `Failed to load cli config from ${configPath}: ${JSON.stringify(error, null, 2)}`,
+    );
   }
 }

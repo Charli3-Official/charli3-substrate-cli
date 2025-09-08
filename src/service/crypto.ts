@@ -22,23 +22,28 @@ async function loadTestnetWallets(): Promise<TestnetWallets> {
   const alice = keyring.addFromUri(
     'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice',
   );
-  console.log('Alice pk  ', u8aToHex(alice.publicKey));
+  console.log('Alice pk    ', u8aToHex(alice.publicKey));
+  console.log('Alice addr  ', alice.address);
   const bob = keyring.addFromUri(
     'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob',
   );
-  console.log('Bob pk    ', u8aToHex(bob.publicKey));
+  console.log('Bob pk      ', u8aToHex(bob.publicKey));
+  console.log('Bob addr    ', bob.address);
   const charlie = keyring.addFromUri(
     'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Charlie',
   );
-  console.log('Charlie pk', u8aToHex(charlie.publicKey));
+  console.log('Charlie pk  ', u8aToHex(charlie.publicKey));
+  console.log('Charlie addr', charlie.address);
   const dave = keyring.addFromUri(
     'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Dave',
   );
-  console.log('Dave pk', u8aToHex(dave.publicKey));
+  console.log('Dave pk     ', u8aToHex(dave.publicKey));
+  console.log('Dave addr   ', dave.address);
   const eve = keyring.addFromUri(
     'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Eve',
   );
-  console.log('Eve pk', u8aToHex(eve.publicKey));
+  console.log('Eve pk      ', u8aToHex(eve.publicKey));
+  console.log('Eve addr    ', eve.address);
 
   return {
     alice,

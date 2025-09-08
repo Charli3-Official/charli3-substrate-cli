@@ -24,8 +24,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "charli3": "node dist/main.js",
-    "dev": "tsx src/main.ts",
+    "charli3": "node dist/cli.js",
+    "dev": "tsx src/cli.ts",
     "lint": "eslint ./src --ext .ts,.tsx",
     "lint:fix": "eslint ./src --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.ts\"",
