@@ -21,7 +21,7 @@ const PalletOracleConfigNodeTradePairSchema = z.object({
   quoteCurrency: BytesSchema,
 });
 
-const PalletOracleOracleConfigurationSchema = z.object({
+const PalletOracleConsensusConfigurationSchema = z.object({
   minNodesForTrustedAggregation: z.number(),
   feedAge: z.number(),
   outliersRange: z.number(),
@@ -29,12 +29,19 @@ const PalletOracleOracleConfigurationSchema = z.object({
   tradePairs: z.array(PalletOracleConfigNodeTradePairSchema),
 });
 
+const PalletOracleMessagesConfigurationSchema = z.array(
+  z.tuple([BytesSchema, z.array(z.number())]),
+);
+
 const CliConfigSchema = z.object({
   multisig: z.object({
     addresses: z.array(z.string()),
     threshold: z.number(),
   }),
-  oracleConfig: PalletOracleOracleConfigurationSchema,
+  oracleConfig: z.object({
+    consensus: PalletOracleConsensusConfigurationSchema,
+    messages: PalletOracleMessagesConfigurationSchema,
+  }),
 });
 
 export type CliConfig = z.infer<typeof CliConfigSchema>;

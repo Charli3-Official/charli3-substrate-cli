@@ -2,35 +2,49 @@ import { DedotClient, WsProvider } from 'dedot';
 
 import type {
   Charli3SubstrateRuntimeApi,
-  PalletOracleOracleConfiguration,
+  PalletOracleConsensusConfiguration,
 } from '../charli3-substrate-runtime/index.js';
+import type { Bytes } from 'dedot/codecs';
 
 export { getCurrentConfig, useSubstrateClient };
+export type { OracleConfig, PalletOracleMessagesConfiguration };
+
+interface OracleConfig {
+  consensus: PalletOracleConsensusConfiguration;
+  messages: PalletOracleMessagesConfiguration;
+}
+
+type PalletOracleMessagesConfiguration = [Bytes, number[]][];
 
 async function getCurrentConfig(
   client: DedotClient<Charli3SubstrateRuntimeApi>,
-): Promise<PalletOracleOracleConfiguration> {
+): Promise<OracleConfig> {
   const minNodesForTrustedAggregation = await client.query.oracle.minNodesForTrustedAggregation();
   const feedAge = await client.query.oracle.feedAge();
   const outliersRange = await client.query.oracle.outliersRange();
   const divergency = await client.query.oracle.divergency();
   const tradePairs = await client.query.oracle.tradePairs();
+  const channelsToTradePairs = await client.query.oracle.channelsToTradePairs();
   if (
     minNodesForTrustedAggregation === undefined ||
     feedAge === undefined ||
     outliersRange === undefined ||
     divergency === undefined ||
-    tradePairs === undefined
+    tradePairs === undefined ||
+    channelsToTradePairs === undefined
   ) {
     throw new Error("Couldn't load oracle config");
   }
 
   return {
-    minNodesForTrustedAggregation,
-    feedAge,
-    outliersRange,
-    divergency,
-    tradePairs,
+    consensus: {
+      minNodesForTrustedAggregation,
+      feedAge,
+      outliersRange,
+      divergency,
+      tradePairs,
+    },
+    messages: channelsToTradePairs,
   };
 }
 

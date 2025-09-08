@@ -6,14 +6,19 @@ multisig:
   threshold: 2
 
 oracleConfig:
-  minNodesForTrustedAggregation: 3
-  feedAge: 12
-  outliersRange: 160
-  divergency: 65
-  tradePairs:
-    - baseCurrency: "ADA"
-      quoteCurrency: "USD"
-    - baseCurrency: "ETH"
-      quoteCurrency: "USD"
-    - baseCurrency: "BTC"
-      quoteCurrency: "USD"
+  consensus:
+    minNodesForTrustedAggregation: 3
+    feedAge: 12
+    outliersRange: 160
+    divergency: 65
+    tradePairs:
+      - baseCurrency: 'ADA'
+        quoteCurrency: 'USD'
+      - baseCurrency: 'ETH'
+        quoteCurrency: 'USD'
+      - baseCurrency: 'BTC'
+        quoteCurrency: 'USD'
+  messages:
+    - ['0x1234abcdef', [0, 1]]
+    - ['0xcafefacade', [2]]
+    - ['fluid', [0, 1, 2]]
