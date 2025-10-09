@@ -41,8 +41,11 @@ yarn check-types
 
 ```bash
 # Submit new oracle configuration update tx, which may require several steps in case of multisig
-yarn charli3 start-config-update -w alice
+yarn charli3 start-config-update -w one --config config.yml
+
+# You can also provide wallet as an explicit SURI
+yarn charli3 start-config-update -w 'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminOne' --config config.yml
 
 # Sign oracle configuration update tx, and complete it in case of multisig threshold was reached
-yarn charli3 sign-config-update -w bob --tx 0xffff0d3983034ad8097d3723433e5482393afd81953f6e2f56806be5fa11ffff
+yarn charli3 sign-config-update -w two --config config.yml --tx 0xffff0d3983034ad8097d3723433e5482393afd81953f6e2f56806be5fa11ffff
 ```
