@@ -1,19 +1,24 @@
 import { Command } from 'commander';
 import { sortAddresses } from '@polkadot/util-crypto';
 import { getCurrentConfig, useSubstrateClient } from './service/query.js';
-import { createMultiAddress, loadTestnetWallets, type WalletName } from './service/crypto.js';
+import {
+  createMultiAddress,
+  loadTestnetWallets,
+  loadWallet,
+  type WalletName,
+} from './service/crypto.js';
 import { txCallback, waitForTx } from './service/tx.js';
 import { loadCliConfig } from './service/config.js';
 import type { Bytes } from 'dedot/codecs';
+import type { KeyringPair } from '@polkadot/keyring/types';
 
 const program = new Command();
 
 program.name('charli3').description('Oracle platform CLI').version('1.0.0');
 
-async function startConfigUpdate(walletName: WalletName, configPath: string) {
-  // Load wallets
-  const wallets = await loadTestnetWallets();
-  const thisWallet = wallets[walletName];
+async function startConfigUpdate(wallet: string, configPath: string) {
+  // Select wallet
+  const thisWallet = await selectWallet(wallet);
 
   // Load multisig and oracle config from YAML
   const { multisig, oracleConfig } = loadCliConfig(configPath);
@@ -83,14 +88,9 @@ async function startConfigUpdate(walletName: WalletName, configPath: string) {
   });
 }
 
-async function signConfigUpdate(
-  walletName: WalletName,
-  multisigStartTxId: Bytes,
-  configPath: string,
-) {
-  // Load wallets
-  const wallets = await loadTestnetWallets();
-  const thisWallet = wallets[walletName];
+async function signConfigUpdate(wallet: string, multisigStartTxId: Bytes, configPath: string) {
+  // Select wallet
+  const thisWallet = await selectWallet(wallet);
 
   // Load multisig and oracle config from YAML
   const { multisig, oracleConfig } = loadCliConfig(configPath);
@@ -156,12 +156,32 @@ async function signConfigUpdate(
   });
 }
 
+async function selectWallet(suriOrName: string): Promise<KeyringPair> {
+  // Load all testnet wallets
+  const wallets = await loadTestnetWallets();
+
+  // Check if the argument matches a key of TestnetWallets
+  if (suriOrName in wallets) {
+    // Argument is a testnet wallet name
+    const walletName = suriOrName as WalletName;
+    const thisWallet = wallets[walletName];
+    return thisWallet;
+  } else {
+    // Otherwise, treat it as a SURI and load wallet dynamically
+    const wallet = await loadWallet(suriOrName);
+    return wallet;
+  }
+}
+
 program
   .command('start-config-update')
   .description(
     'Submit new oracle configuration update tx, which may require several steps in case of multisig',
   )
-  .requiredOption('-w, --wallet <name>', 'Wallet test name, e.g. alice')
+  .requiredOption(
+    '-w, --wallet <string>',
+    'String refers to wallet test name, e.g. one, or the suri itself',
+  )
   .option(
     '-c, --config <path>',
     'YAML file for Multisig and Oracle configurations',
@@ -176,7 +196,10 @@ program
   .description(
     'Sign oracle configuration update tx, and complete it in case of multisig threshold was reached',
   )
-  .requiredOption('-w, --wallet <name>', 'Wallet test name, e.g. alice')
+  .requiredOption(
+    '-w, --wallet <string>',
+    'String refers to wallet test name, e.g. one, or the suri itself',
+  )
   .requiredOption('-x, --tx <id>', 'Original multisig start tx hash as an 0x-string')
   .option(
     '-c, --config <path>',

@@ -4,7 +4,16 @@ import { Keyring } from '@polkadot/keyring';
 import type { KeyringPair } from '@polkadot/keyring/types';
 
 export type { TestnetWallets, WalletName };
-export { loadTestnetWallets, createMultiAddress };
+export { loadTestnetWallets, createMultiAddress, loadWallet };
+
+async function loadWallet(suri: string): Promise<KeyringPair> {
+  await cryptoWaitReady();
+  const keyring = new Keyring({ type: 'ed25519' });
+  const wallet = keyring.addFromUri(suri);
+  console.log('This Wallet pk  ', u8aToHex(wallet.publicKey));
+  console.log('This Wallet addr', wallet.address);
+  return wallet;
+}
 
 interface TestnetWallets {
   readonly one: KeyringPair;
