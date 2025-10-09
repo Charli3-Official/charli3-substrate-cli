@@ -1,8 +1,19 @@
+# AdminOne pk     0xe8f618b2adc65b06e3fd192be4ae630b3660c10ce927d3bc13e8d2d609500864
+# AdminOne addr   5HLA59bBw9azsmsqRVje3bbpZvLmiM7aa9ZGn3CG9y2bJHEJ
+# AdminTwo pk     0x329b698cfc6c47090dbc16a7676a64a0716002ac2b40ebe6459fb2ad9f6ed8ac
+# AdminTwo addr   5DD4RE4uJQGbDY6uX31FUBeP4C6Weey9ADYEASN59aFHEcaW
+# AdminThree pk   0x66a752772b589667ae25659d23705ba2c8ec4bd66c6a745707c9abc46919ea68
+# AdminThree addr 5EPJSr8TpZLkdvoMDtBgsKuGDmjAG64u9bjZXAfSM9m9PbFk
+# AdminFour pk    0x164ab8e24fc3d1bd1fa995b6d26887255dc57ee7984b72b6c07b47a8b235a41c
+# AdminFour addr  5CZw7Cju5hyDZbrvKUCGLxZZvhvzTAD4unH5mKgGwycgwjx2
+# AdminFive pk    0x7526e7431fb55727ef5c368883a5350fc6586ca1f9db19a39acccbd8bc1aa9ab
+# AdminFive addr  5EiK1uNaSDUpASFuwq2Xm242yzwKtxmtnWV7YtbfWVWNNkGb
+
 multisig:
   addresses:
-    - 5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu
-    - 5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E
-    - 5DbKjhNLpqX3zqZdNBc9BGb4fHU1cRBaDhJUskrvkwfraDi6
+    - 5HLA59bBw9azsmsqRVje3bbpZvLmiM7aa9ZGn3CG9y2bJHEJ
+    - 5DD4RE4uJQGbDY6uX31FUBeP4C6Weey9ADYEASN59aFHEcaW
+    - 5EPJSr8TpZLkdvoMDtBgsKuGDmjAG64u9bjZXAfSM9m9PbFk
   threshold: 2
 
 oracleConfig:

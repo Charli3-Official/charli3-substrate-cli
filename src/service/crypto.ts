@@ -7,11 +7,11 @@ export type { TestnetWallets, WalletName };
 export { loadTestnetWallets, createMultiAddress };
 
 interface TestnetWallets {
-  readonly alice: KeyringPair;
-  readonly bob: KeyringPair;
-  readonly charlie: KeyringPair;
-  readonly dave: KeyringPair;
-  readonly eve: KeyringPair;
+  readonly one: KeyringPair;
+  readonly two: KeyringPair;
+  readonly three: KeyringPair;
+  readonly four: KeyringPair;
+  readonly five: KeyringPair;
 }
 
 type WalletName = keyof TestnetWallets;
@@ -19,38 +19,38 @@ type WalletName = keyof TestnetWallets;
 async function loadTestnetWallets(): Promise<TestnetWallets> {
   await cryptoWaitReady();
   const keyring = new Keyring({ type: 'ed25519' });
-  const alice = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice',
+  const one = keyring.addFromUri(
+    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminOne',
   );
-  console.log('Alice pk    ', u8aToHex(alice.publicKey));
-  console.log('Alice addr  ', alice.address);
-  const bob = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Bob',
+  console.log('AdminOne pk    ', u8aToHex(one.publicKey));
+  console.log('AdminOne addr  ', one.address);
+  const two = keyring.addFromUri(
+    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminTwo',
   );
-  console.log('Bob pk      ', u8aToHex(bob.publicKey));
-  console.log('Bob addr    ', bob.address);
-  const charlie = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Charlie',
+  console.log('AdminTwo pk    ', u8aToHex(two.publicKey));
+  console.log('AdminTwo addr  ', two.address);
+  const three = keyring.addFromUri(
+    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminThree',
   );
-  console.log('Charlie pk  ', u8aToHex(charlie.publicKey));
-  console.log('Charlie addr', charlie.address);
-  const dave = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Dave',
+  console.log('AdminThree pk  ', u8aToHex(three.publicKey));
+  console.log('AdminThree addr', three.address);
+  const four = keyring.addFromUri(
+    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminFour',
   );
-  console.log('Dave pk     ', u8aToHex(dave.publicKey));
-  console.log('Dave addr   ', dave.address);
-  const eve = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//Eve',
+  console.log('AdminFour pk   ', u8aToHex(four.publicKey));
+  console.log('AdminFour addr ', four.address);
+  const five = keyring.addFromUri(
+    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminFive',
   );
-  console.log('Eve pk      ', u8aToHex(eve.publicKey));
-  console.log('Eve addr    ', eve.address);
+  console.log('AdminFive pk   ', u8aToHex(five.publicKey));
+  console.log('AdminFive addr ', five.address);
 
   return {
-    alice,
-    bob,
-    charlie,
-    dave,
-    eve,
+    one,
+    two,
+    three,
+    four,
+    five,
   };
 }
 
