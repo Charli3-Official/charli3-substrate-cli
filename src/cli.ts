@@ -4,7 +4,7 @@ import { getCurrentConfig, useSubstrateClient } from './service/query.js';
 import { createMultiAddress, loadTestnetWallet, loadWallet } from './service/crypto.js';
 import { txCallback, waitForTx } from './service/tx.js';
 import { loadCliConfig } from './service/config.js';
-import type { Bytes } from 'dedot/codecs';
+import { AccountId32, type Bytes } from 'dedot/codecs';
 import type { KeyringPair } from '@polkadot/keyring/types';
 
 const program = new Command();
@@ -151,6 +151,74 @@ async function signConfigUpdate(wallet: string, multisigStartTxId: Bytes, config
   });
 }
 
+async function authorizeNode(wallet: string, nodePubKey: string) {
+  // Select wallet
+  const thisWallet = await selectWallet(wallet);
+
+  const nodeKey = new AccountId32(nodePubKey);
+  console.log('Node key is ', nodeKey);
+
+  await useSubstrateClient(async (client) => {
+    const sudoKey = await client.query.sudo.key();
+    console.log('Sudo address is ', sudoKey?.address() ?? 'Not found');
+
+    const currentNodesRaw = await client.query.oracle.authorizedOracleNodes.entries();
+    const currentNodes = currentNodesRaw.map((account) => account[0]);
+    console.log('Current oracle nodes:', currentNodes);
+
+    const oracleCall = client.tx.oracle.sudoRegisterOracleNode(nodeKey);
+    // Wrap it in sudo.sudo
+    const sudoCall = client.tx.sudo.sudo(oracleCall.call);
+    const unsub = await sudoCall.signAndSend(thisWallet, { tip: 0n }, async (result) => {
+      txCallback(result);
+      if (result.status.type === 'Finalized') await unsub();
+    });
+    await waitForTx(client);
+
+    // Query result
+    const updatedNodesRaw = await client.query.oracle.authorizedOracleNodes.entries();
+    const updatedNodes = updatedNodesRaw.map((account) => account[0]);
+    console.log('Updated oracle nodes:', updatedNodes);
+    if (updatedNodes.find((el) => el.eq(nodeKey))) {
+      console.log('Oracle node added successfully!');
+    }
+  });
+}
+
+async function deauthorizeNode(wallet: string, nodePubKey: string) {
+  // Select wallet
+  const thisWallet = await selectWallet(wallet);
+
+  const nodeKey = new AccountId32(nodePubKey);
+  console.log('Node key is ', nodeKey);
+
+  await useSubstrateClient(async (client) => {
+    const sudoKey = await client.query.sudo.key();
+    console.log('Sudo address is ', sudoKey?.address() ?? 'Not found');
+
+    const currentNodesRaw = await client.query.oracle.authorizedOracleNodes.entries();
+    const currentNodes = currentNodesRaw.map((account) => account[0]);
+    console.log('Current oracle nodes:', currentNodes);
+
+    const oracleCall = client.tx.oracle.sudoDeregisterOracleNode(nodeKey);
+    // Wrap it in sudo.sudo
+    const sudoCall = client.tx.sudo.sudo(oracleCall.call);
+    const unsub = await sudoCall.signAndSend(thisWallet, { tip: 0n }, async (result) => {
+      txCallback(result);
+      if (result.status.type === 'Finalized') await unsub();
+    });
+    await waitForTx(client);
+
+    // Query result
+    const updatedNodesRaw = await client.query.oracle.authorizedOracleNodes.entries();
+    const updatedNodes = updatedNodesRaw.map((account) => account[0]);
+    console.log('Updated oracle nodes:', updatedNodes);
+    if (updatedNodes.find((el) => el.eq(nodeKey)) === undefined) {
+      console.log('Oracle node removed successfully!');
+    }
+  });
+}
+
 async function selectWallet(suriOrName: string): Promise<KeyringPair> {
   if (suriOrName.split(' ').length >= 12) {
     // If argument is a SURI, then load wallet dynamically
@@ -198,6 +266,30 @@ program
   )
   .action(async (opts) => {
     await signConfigUpdate(opts.wallet, opts.tx, opts.config);
+  });
+
+program
+  .command('authorize-node')
+  .description('authorize node')
+  .requiredOption(
+    '-w, --wallet <string>',
+    'String refers to wallet test name, e.g. Alice, or the suri itself',
+  )
+  .requiredOption('-n, --node <string>', 'String refers to AccountId32Like of added node')
+  .action(async (opts) => {
+    await authorizeNode(opts.wallet, opts.node);
+  });
+
+program
+  .command('deauthorize-node')
+  .description('deauthorize node')
+  .requiredOption(
+    '-w, --wallet <string>',
+    'String refers to wallet test name, e.g. Alice, or the suri itself',
+  )
+  .requiredOption('-n, --node <string>', 'String refers to AccountId32Like of added node')
+  .action(async (opts) => {
+    await deauthorizeNode(opts.wallet, opts.node);
   });
 
 program.parseAsync(process.argv);
