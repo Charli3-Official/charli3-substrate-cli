@@ -1,12 +1,7 @@
 import { Command } from 'commander';
 import { sortAddresses } from '@polkadot/util-crypto';
 import { getCurrentConfig, useSubstrateClient } from './service/query.js';
-import {
-  createMultiAddress,
-  loadTestnetWallets,
-  loadWallet,
-  type WalletName,
-} from './service/crypto.js';
+import { createMultiAddress, loadTestnetWallet, loadWallet } from './service/crypto.js';
 import { txCallback, waitForTx } from './service/tx.js';
 import { loadCliConfig } from './service/config.js';
 import type { Bytes } from 'dedot/codecs';
@@ -157,19 +152,14 @@ async function signConfigUpdate(wallet: string, multisigStartTxId: Bytes, config
 }
 
 async function selectWallet(suriOrName: string): Promise<KeyringPair> {
-  // Load all testnet wallets
-  const wallets = await loadTestnetWallets();
-
-  // Check if the argument matches a key of TestnetWallets
-  if (suriOrName in wallets) {
-    // Argument is a testnet wallet name
-    const walletName = suriOrName as WalletName;
-    const thisWallet = wallets[walletName];
-    return thisWallet;
-  } else {
-    // Otherwise, treat it as a SURI and load wallet dynamically
+  if (suriOrName.split(' ').length >= 12) {
+    // If argument is a SURI, then load wallet dynamically
     const wallet = await loadWallet(suriOrName);
     return wallet;
+  } else {
+    // Otherwise, treat it as a testnet wallet name
+    const testWallet = await loadTestnetWallet(suriOrName);
+    return testWallet;
   }
 }
 
@@ -180,7 +170,7 @@ program
   )
   .requiredOption(
     '-w, --wallet <string>',
-    'String refers to wallet test name, e.g. one, or the suri itself',
+    'String refers to wallet test name, e.g. Alice, or the suri itself',
   )
   .option(
     '-c, --config <path>',
@@ -198,7 +188,7 @@ program
   )
   .requiredOption(
     '-w, --wallet <string>',
-    'String refers to wallet test name, e.g. one, or the suri itself',
+    'String refers to wallet test name, e.g. Alice, or the suri itself',
   )
   .requiredOption('-x, --tx <id>', 'Original multisig start tx hash as an 0x-string')
   .option(
