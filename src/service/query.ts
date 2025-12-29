@@ -48,6 +48,7 @@ async function getCurrentConfig(
   };
 }
 
+// TODO wsJsonRpcUrl: string
 async function useSubstrateClient(
   action: (client: DedotClient<Charli3SubstrateRuntimeApi>) => Promise<void>,
 ) {
