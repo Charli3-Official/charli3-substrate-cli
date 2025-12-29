@@ -3,8 +3,7 @@ import { createKeyMulti, encodeAddress, cryptoWaitReady } from '@polkadot/util-c
 import { Keyring } from '@polkadot/keyring';
 import type { KeyringPair } from '@polkadot/keyring/types';
 
-export type { TestnetWallets, WalletName };
-export { loadTestnetWallets, createMultiAddress, loadWallet };
+export { loadTestnetWallet, createMultiAddress, loadWallet };
 
 async function loadWallet(suri: string): Promise<KeyringPair> {
   await cryptoWaitReady();
@@ -15,52 +14,16 @@ async function loadWallet(suri: string): Promise<KeyringPair> {
   return wallet;
 }
 
-interface TestnetWallets {
-  readonly one: KeyringPair;
-  readonly two: KeyringPair;
-  readonly three: KeyringPair;
-  readonly four: KeyringPair;
-  readonly five: KeyringPair;
-}
-
-type WalletName = keyof TestnetWallets;
-
-async function loadTestnetWallets(): Promise<TestnetWallets> {
+async function loadTestnetWallet(testWalletName: string): Promise<KeyringPair> {
   await cryptoWaitReady();
   const keyring = new Keyring({ type: 'ed25519' });
-  const one = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminOne',
+  const testWallet = keyring.addFromUri(
+    `bottom drive obey lake curtain smoke basket hold race lonely fit walk//${testWalletName}`,
   );
-  console.log('AdminOne pk    ', u8aToHex(one.publicKey));
-  console.log('AdminOne addr  ', one.address);
-  const two = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminTwo',
-  );
-  console.log('AdminTwo pk    ', u8aToHex(two.publicKey));
-  console.log('AdminTwo addr  ', two.address);
-  const three = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminThree',
-  );
-  console.log('AdminThree pk  ', u8aToHex(three.publicKey));
-  console.log('AdminThree addr', three.address);
-  const four = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminFour',
-  );
-  console.log('AdminFour pk   ', u8aToHex(four.publicKey));
-  console.log('AdminFour addr ', four.address);
-  const five = keyring.addFromUri(
-    'bottom drive obey lake curtain smoke basket hold race lonely fit walk//AdminFive',
-  );
-  console.log('AdminFive pk   ', u8aToHex(five.publicKey));
-  console.log('AdminFive addr ', five.address);
+  console.log('Test Wallet pk    ', u8aToHex(testWallet.publicKey));
+  console.log('Test Wallet addr  ', testWallet.address);
 
-  return {
-    one,
-    two,
-    three,
-    four,
-    five,
-  };
+  return testWallet;
 }
 
 function createMultiAddress(
