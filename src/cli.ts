@@ -11,14 +11,14 @@ const program = new Command();
 
 program.name('charli3').description('Oracle platform CLI').version('1.0.0');
 
-async function startConfigUpdate(wallet: string, configPath: string) {
+async function startConfigUpdate(wallet: string, configPath: string, wsJsonRpcUrl: string) {
   // Select wallet
   const thisWallet = await selectWallet(wallet);
 
   // Load multisig and oracle config from YAML
   const { multisig, oracleConfig } = loadCliConfig(configPath);
 
-  await useSubstrateClient(async (client) => {
+  await useSubstrateClient(wsJsonRpcUrl, async (client) => {
     const multiAddr = createMultiAddress(multisig.addresses, multisig.threshold);
 
     const sudoKey = await client.query.sudo.key();
@@ -83,14 +83,19 @@ async function startConfigUpdate(wallet: string, configPath: string) {
   });
 }
 
-async function signConfigUpdate(wallet: string, multisigStartTxId: Bytes, configPath: string) {
+async function signConfigUpdate(
+  wallet: string,
+  multisigStartTxId: Bytes,
+  configPath: string,
+  wsJsonRpcUrl: string,
+) {
   // Select wallet
   const thisWallet = await selectWallet(wallet);
 
   // Load multisig and oracle config from YAML
   const { multisig, oracleConfig } = loadCliConfig(configPath);
 
-  await useSubstrateClient(async (client) => {
+  await useSubstrateClient(wsJsonRpcUrl, async (client) => {
     const multiAddr = createMultiAddress(multisig.addresses, multisig.threshold);
 
     const sudoKey = await client.query.sudo.key();
@@ -151,14 +156,14 @@ async function signConfigUpdate(wallet: string, multisigStartTxId: Bytes, config
   });
 }
 
-async function authorizeNode(wallet: string, nodePubKey: string) {
+async function authorizeNode(wallet: string, nodePubKey: string, wsJsonRpcUrl: string) {
   // Select wallet
   const thisWallet = await selectWallet(wallet);
 
   const nodeKey = new AccountId32(nodePubKey);
   console.log('Node key is ', nodeKey);
 
-  await useSubstrateClient(async (client) => {
+  await useSubstrateClient(wsJsonRpcUrl, async (client) => {
     const sudoKey = await client.query.sudo.key();
     console.log('Sudo address is ', sudoKey?.address() ?? 'Not found');
 
@@ -185,14 +190,14 @@ async function authorizeNode(wallet: string, nodePubKey: string) {
   });
 }
 
-async function deauthorizeNode(wallet: string, nodePubKey: string) {
+async function deauthorizeNode(wallet: string, nodePubKey: string, wsJsonRpcUrl: string) {
   // Select wallet
   const thisWallet = await selectWallet(wallet);
 
   const nodeKey = new AccountId32(nodePubKey);
   console.log('Node key is ', nodeKey);
 
-  await useSubstrateClient(async (client) => {
+  await useSubstrateClient(wsJsonRpcUrl, async (client) => {
     const sudoKey = await client.query.sudo.key();
     console.log('Sudo address is ', sudoKey?.address() ?? 'Not found');
 
@@ -245,8 +250,13 @@ program
     'YAML file for Multisig and Oracle configurations',
     'testnet-config.yml',
   )
+  .option(
+    '-s, --substrate-rpc <url>',
+    'Web Socket URL for JSON RPC protocol',
+    'ws://127.0.0.1:9944',
+  )
   .action(async (opts) => {
-    await startConfigUpdate(opts.wallet, opts.config);
+    await startConfigUpdate(opts.wallet, opts.config, opts.substrateRpc);
   });
 
 program
@@ -264,32 +274,47 @@ program
     'YAML file for Multisig and Oracle configurations',
     'testnet-config.yml',
   )
+  .option(
+    '-s, --substrate-rpc <url>',
+    'Web Socket URL for JSON RPC protocol',
+    'ws://127.0.0.1:9944',
+  )
   .action(async (opts) => {
-    await signConfigUpdate(opts.wallet, opts.tx, opts.config);
+    await signConfigUpdate(opts.wallet, opts.tx, opts.config, opts.substrateRpc);
   });
 
 program
   .command('authorize-node')
-  .description('authorize node')
+  .description('Authorize Oracle Node')
   .requiredOption(
     '-w, --wallet <string>',
     'String refers to wallet test name, e.g. Alice, or the suri itself',
   )
   .requiredOption('-n, --node <string>', 'String refers to AccountId32Like of added node')
+  .option(
+    '-s, --substrate-rpc <url>',
+    'Web Socket URL for JSON RPC protocol',
+    'ws://127.0.0.1:9944',
+  )
   .action(async (opts) => {
-    await authorizeNode(opts.wallet, opts.node);
+    await authorizeNode(opts.wallet, opts.node, opts.substrateRpc);
   });
 
 program
   .command('deauthorize-node')
-  .description('deauthorize node')
+  .description('Deauthorize Oracle Node')
   .requiredOption(
     '-w, --wallet <string>',
     'String refers to wallet test name, e.g. Alice, or the suri itself',
   )
-  .requiredOption('-n, --node <string>', 'String refers to AccountId32Like of added node')
+  .requiredOption('-n, --node <string>', 'String refers to AccountId32Like of removed node')
+  .option(
+    '-s, --substrate-rpc <url>',
+    'Web Socket URL for JSON RPC protocol',
+    'ws://127.0.0.1:9944',
+  )
   .action(async (opts) => {
-    await deauthorizeNode(opts.wallet, opts.node);
+    await deauthorizeNode(opts.wallet, opts.node, opts.substrateRpc);
   });
 
 program.parseAsync(process.argv);
