@@ -443,6 +443,16 @@ export interface ChainEvents extends GenericChainEvents {
         block: number;
       }
     >;
+    AddedOracleNode: GenericPalletEvent<
+      'Oracle',
+      'AddedOracleNode',
+      { which: AccountId32; block: number }
+    >;
+    RemovedOracleNode: GenericPalletEvent<
+      'Oracle',
+      'RemovedOracleNode',
+      { which: AccountId32; block: number }
+    >;
 
     /**
      * Generic pallet event

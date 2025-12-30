@@ -422,7 +422,9 @@ export type PalletOracleEvent =
         channelsToTradePairs: Array<[Bytes, Array<number>]>;
         block: number;
       };
-    };
+    }
+  | { name: 'AddedOracleNode'; data: { which: AccountId32; block: number } }
+  | { name: 'RemovedOracleNode'; data: { which: AccountId32; block: number } };
 
 export type PalletOracleOracleMessage = {
   channelId: Bytes;
