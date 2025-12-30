@@ -3,7 +3,7 @@ import { sortAddresses } from '@polkadot/util-crypto';
 import { getCurrentConfig, useSubstrateClient } from './service/query.js';
 import { createMultiAddress, loadTestnetWallet, loadWallet } from './service/crypto.js';
 import { txCallback, waitForTx } from './service/tx.js';
-import { loadCliConfig } from './service/config.js';
+import { loadCliConfig, loadMultisigConfig } from './service/config.js';
 import { AccountId32, type Bytes } from 'dedot/codecs';
 import type { KeyringPair } from '@polkadot/keyring/types';
 
@@ -166,7 +166,7 @@ async function startAuthorizeNode(
   const thisWallet = await selectWallet(wallet);
 
   // Load multisig and oracle config from YAML
-  const { multisig } = loadCliConfig(configPath);
+  const { multisig } = loadMultisigConfig(configPath);
 
   const nodeKey = new AccountId32(nodePubKey);
   console.log('Node key is ', nodeKey);
@@ -251,7 +251,7 @@ async function signAuthorizeNode(
   const thisWallet = await selectWallet(wallet);
 
   // Load multisig and oracle config from YAML
-  const { multisig } = loadCliConfig(configPath);
+  const { multisig } = loadMultisigConfig(configPath);
 
   const nodeKey = new AccountId32(nodePubKey);
   console.log('Node key is ', nodeKey);
@@ -327,7 +327,7 @@ async function startDeauthorizeNode(
   const thisWallet = await selectWallet(wallet);
 
   // Load multisig and oracle config from YAML
-  const { multisig } = loadCliConfig(configPath);
+  const { multisig } = loadMultisigConfig(configPath);
 
   const nodeKey = new AccountId32(nodePubKey);
   console.log('Node key is ', nodeKey);
@@ -412,7 +412,7 @@ async function signDeauthorizeNode(
   const thisWallet = await selectWallet(wallet);
 
   // Load multisig and oracle config from YAML
-  const { multisig } = loadCliConfig(configPath);
+  const { multisig } = loadMultisigConfig(configPath);
 
   const nodeKey = new AccountId32(nodePubKey);
   console.log('Node key is ', nodeKey);
