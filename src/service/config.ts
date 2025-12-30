@@ -46,6 +46,7 @@ const CliConfigSchema = z.object({
 
 export type CliConfig = z.infer<typeof CliConfigSchema>;
 
+// TODO separate loaders
 export function loadCliConfig(configPath: string): CliConfig {
   if (!fs.existsSync(configPath)) {
     throw new Error(`Oracle config file not found: ${configPath}`);
