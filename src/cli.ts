@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import { sortAddresses } from '@polkadot/util-crypto';
 import { getCurrentConfig, useSubstrateClient } from './service/query.js';
-import { createMultiAddress, loadTestnetWallet, loadWallet } from './service/crypto.js';
-import { txCallback, waitForTx } from './service/tx.js';
+import { createMultiAddress } from './service/crypto.js';
+import { calculateSafeWeight, txCallback, waitForTx } from './service/tx.js';
 import { loadCliConfig, loadMultisigConfig } from './service/config.js';
 import { AccountId32, type Bytes } from 'dedot/codecs';
 import type { KeyringPair } from '@polkadot/keyring/types';
@@ -11,28 +11,17 @@ import type {
   Charli3SubstrateRuntimeApi,
   PalletMultisigTimepoint,
 } from './charli3-substrate-runtime/index.js';
-import type { TxPaymentInfo } from 'dedot/types';
 import type { ChainSubmittableExtrinsic } from './charli3-substrate-runtime/tx.js';
+import {
+  addNodeOption,
+  addSigningOptions,
+  addWalletAndConfigOptions,
+  selectWallet,
+} from './service/cli.js';
 
 const program = new Command();
 
 program.name('charli3').description('Oracle platform CLI').version('1.0.0');
-
-// Helper function to select wallet
-async function selectWallet(suriOrName: string): Promise<KeyringPair> {
-  if (suriOrName.split(' ').length >= 12) {
-    return await loadWallet(suriOrName);
-  }
-  return await loadTestnetWallet(suriOrName);
-}
-
-// Helper to calculate safe weight with 2x buffer
-function calculateSafeWeight(estimation: TxPaymentInfo) {
-  return {
-    refTime: estimation.weight.refTime * 2n,
-    proofSize: estimation.weight.proofSize * 2n,
-  };
-}
 
 // Generic multisig transaction executor
 interface MultisigTxParams {
@@ -219,33 +208,6 @@ async function handleNodeOperation(
       console.log('Oracle node removed successfully!');
     }
   });
-}
-
-// Command definitions with shared option builders
-function addWalletAndConfigOptions(cmd: Command) {
-  return cmd
-    .requiredOption(
-      '-w, --wallet <string>',
-      'String refers to wallet test name, e.g. Alice, or the suri itself',
-    )
-    .option(
-      '-c, --config <path>',
-      'YAML file for Multisig and Oracle configurations',
-      'testnet-config.yml',
-    )
-    .option(
-      '-s, --substrate-rpc <url>',
-      'Web Socket URL for JSON RPC protocol',
-      'ws://127.0.0.1:9944',
-    );
-}
-
-function addSigningOptions(cmd: Command) {
-  return cmd.requiredOption('-x, --tx <id>', 'Original multisig start tx hash as an 0x-string');
-}
-
-function addNodeOption(cmd: Command, description: string) {
-  return cmd.requiredOption('-n, --node <string>', description);
 }
 
 // Config update commands

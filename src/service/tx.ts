@@ -1,8 +1,8 @@
-import type { ISubmittableResult } from 'dedot/types';
+import type { ISubmittableResult, TxPaymentInfo } from 'dedot/types';
 import type { DedotClient } from 'dedot';
 import type { Charli3SubstrateRuntimeApi } from '../charli3-substrate-runtime/index.js';
 
-export { txCallback, waitForTx };
+export { txCallback, waitForTx, calculateSafeWeight };
 
 function txCallback<TxResult extends ISubmittableResult = ISubmittableResult>(
   result: TxResult,
@@ -30,4 +30,12 @@ async function waitForTx(client: DedotClient<Charli3SubstrateRuntimeApi>) {
   const waitTime = Number(client.consts.aura.slotDuration) + 1_000;
   console.log(`Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`);
   await new Promise((resolve) => setTimeout(resolve, waitTime));
+}
+
+// Helper to calculate safe weight with 2x buffer
+function calculateSafeWeight(estimation: TxPaymentInfo) {
+  return {
+    refTime: estimation.weight.refTime * 2n,
+    proofSize: estimation.weight.proofSize * 2n,
+  };
 }
