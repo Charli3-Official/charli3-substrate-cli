@@ -49,12 +49,13 @@ async function getCurrentConfig(
 }
 
 async function useSubstrateClient(
+  wsJsonRpcUrl: string,
   action: (client: DedotClient<Charli3SubstrateRuntimeApi>) => Promise<void>,
 ) {
   let provider;
   try {
     // Connect
-    provider = new WsProvider('ws://127.0.0.1:9944');
+    provider = new WsProvider(wsJsonRpcUrl);
     const client = await DedotClient.new<Charli3SubstrateRuntimeApi>(provider);
     // Use
     await action(client);

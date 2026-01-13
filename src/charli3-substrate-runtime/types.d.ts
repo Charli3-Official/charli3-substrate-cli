@@ -422,11 +422,13 @@ export type PalletOracleEvent =
         channelsToTradePairs: Array<[Bytes, Array<number>]>;
         block: number;
       };
-    };
+    }
+  | { name: 'AddedOracleNode'; data: { which: AccountId32; block: number } }
+  | { name: 'RemovedOracleNode'; data: { which: AccountId32; block: number } };
 
 export type PalletOracleOracleMessage = {
   channelId: Bytes;
-  pricesAndAge: Array<[number, number] | undefined>;
+  pricesAndAge: Array<[bigint, number] | undefined>;
   timestamp: bigint;
   rewards: Array<[FixedBytes<32>, number]>;
 };
@@ -437,7 +439,7 @@ export type SpRuntimeMultiSignature =
   | { type: 'Ecdsa'; value: FixedBytes<65> };
 
 export type PalletOracleAggregationState = {
-  pricesAgeAndRewards: Array<[number, number, Array<FixedBytes<32>>] | undefined>;
+  pricesAgeAndRewards: Array<[bigint, number, Array<FixedBytes<32>>] | undefined>;
   timestamp: bigint;
 };
 
@@ -1672,7 +1674,7 @@ export type PalletMultisigCallLike =
 export type PalletOracleCall =
   | {
       name: 'StorePrices';
-      params: { prices: Array<[PalletOracleConfigNodeTradePair, number]> };
+      params: { prices: Array<[PalletOracleConfigNodeTradePair, bigint]> };
     }
   | {
       name: 'StoreSignatures';
@@ -1686,12 +1688,17 @@ export type PalletOracleCall =
         consensusConfig: PalletOracleConsensusConfiguration;
         channelsToTradePairs: Array<[Bytes, Array<number>]>;
       };
+    }
+  | { name: 'SudoRegisterOracleNode'; params: { oracleAccount: AccountId32 } }
+  | {
+      name: 'SudoDeregisterOracleNode';
+      params: { oracleAccount: AccountId32 };
     };
 
 export type PalletOracleCallLike =
   | {
       name: 'StorePrices';
-      params: { prices: Array<[PalletOracleConfigNodeTradePair, number]> };
+      params: { prices: Array<[PalletOracleConfigNodeTradePair, bigint]> };
     }
   | {
       name: 'StoreSignatures';
@@ -1705,6 +1712,14 @@ export type PalletOracleCallLike =
         consensusConfig: PalletOracleConsensusConfiguration;
         channelsToTradePairs: Array<[BytesLike, Array<number>]>;
       };
+    }
+  | {
+      name: 'SudoRegisterOracleNode';
+      params: { oracleAccount: AccountId32Like };
+    }
+  | {
+      name: 'SudoDeregisterOracleNode';
+      params: { oracleAccount: AccountId32Like };
     };
 
 /**
@@ -1786,6 +1801,15 @@ export type PalletMultisigError =
   | 'AlreadyStored';
 
 export type PalletTransactionPaymentReleases = 'V1Ancient' | 'V2';
+
+/**
+ * The `Error` enum of this pallet.
+ **/
+export type PalletOracleError =
+  /**
+   * Oracle node is not authorized to submit data
+   **/
+  'UnauthorizedNode';
 
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
@@ -1890,4 +1914,5 @@ export type Charli3SubstrateRuntimeRuntimeError =
   | { pallet: 'Grandpa'; palletError: PalletGrandpaError }
   | { pallet: 'Balances'; palletError: PalletBalancesError }
   | { pallet: 'Sudo'; palletError: PalletSudoError }
-  | { pallet: 'Multisig'; palletError: PalletMultisigError };
+  | { pallet: 'Multisig'; palletError: PalletMultisigError }
+  | { pallet: 'Oracle'; palletError: PalletOracleError };
