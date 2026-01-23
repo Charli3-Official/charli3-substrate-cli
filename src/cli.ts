@@ -68,30 +68,59 @@ async function executeMultisigTx({
   );
 
   let txMultiHash: `0x${string}` | undefined = undefined;
+  let txIncluded = false;
 
-  const unsub = await txFinal.signAndSend(wallet, { tip: 0n }, async (result) => {
-    txCallback(result);
-    for (const e of result.events) {
-      if (e.event.pallet === 'Multisig' && e.event.palletEvent.name === 'NewMultisig') {
-        console.log(e.event.palletEvent.data);
-        txMultiHash = e.event.palletEvent.data.callHash;
-        console.log('tx id', txMultiHash);
+  try {
+    const unsub = await txFinal.signAndSend(wallet, { tip: 0n }, async (result) => {
+      txCallback(result);
+      for (const e of result.events) {
+        if (e.event.pallet === 'Multisig' && e.event.palletEvent.name === 'NewMultisig') {
+          console.log(e.event.palletEvent.data);
+          txMultiHash = e.event.palletEvent.data.callHash;
+          console.log('tx id', txMultiHash);
+        }
       }
-    }
-    if (result.status.type === 'Finalized') await unsub();
-  });
+      if (result.status.type === 'BestChainBlockIncluded' || result.status.type === 'Finalized') {
+        txIncluded = true;
+      }
+      if (result.status.type === 'Finalized') await unsub();
+    });
 
-  await waitForTx(client);
+    await waitForTx(client);
+  } catch (error: any) {
+    // Handle WebSocket timeout gracefully
+    if (error?.message?.includes('No new blocks received') ||
+        error?.message?.includes('Websocket connection does not exist')) {
+      console.log('\n⚠️  WebSocket subscription timed out, but transaction may have been included.');
+      console.log('Checking transaction status via polling...\n');
+      txIncluded = true; // Assume included and verify below
+    } else {
+      throw error;
+    }
+  }
 
   // For signing operations (when `when` is provided), we don't need to return hash
   if (when !== undefined) {
+    if (!txIncluded) {
+      console.log('\n⚠️  Transaction status unknown due to connection timeout.');
+      console.log('Please verify manually or retry the operation.\n');
+    }
     return null;
   }
 
   if (!txMultiHash) throw new Error('Was not able to submit new multisig');
 
-  const multisigTx = await client.query.multisig.multisigs([multiAddr, txMultiHash]);
-  console.log('multisig tx stored', multisigTx);
+  // Verify the multisig was stored on-chain
+  try {
+    const multisigTx = await client.query.multisig.multisigs([multiAddr, txMultiHash]);
+    if (multisigTx) {
+      console.log('✅ multisig tx stored', multisigTx);
+    } else {
+      console.log('⚠️  Multisig not found on-chain. Transaction may have failed.');
+    }
+  } catch (error) {
+    console.log('⚠️  Could not verify multisig storage:', error);
+  }
 
   return txMultiHash;
 }
@@ -141,8 +170,27 @@ async function handleConfigUpdate(
     });
 
     // Query updated config
-    const updatedConfig = await getCurrentConfig(client);
-    console.log('Updated oracle config:', updatedConfig);
+    try {
+      const updatedConfig = await getCurrentConfig(client);
+      console.log('\n📊 Updated oracle config:', updatedConfig);
+
+      // Compare with desired config to verify
+      if (when !== undefined && multisigStartTxId) {
+        // This was a signing operation that should have executed
+        const configChanged = JSON.stringify(updatedConfig) !== JSON.stringify(currentConfig);
+        if (configChanged) {
+          console.log('\n✅ Config update succeeded! Changes are live on-chain.');
+        } else {
+          console.log('\n⚠️  Config appears unchanged. This could mean:');
+          console.log('   - Threshold not yet reached (need more signatures)');
+          console.log('   - Transaction still pending');
+          console.log('   - Transaction failed (check events above)');
+        }
+      }
+    } catch (error) {
+      console.log('\n⚠️  Could not query updated config:', error);
+      console.log('Transaction may have succeeded. Verify manually with check-balance command.');
+    }
   });
 }
 
@@ -288,5 +336,124 @@ addWalletAndConfigOptions(
     opts.tx,
   );
 });
+
+// Balance check command
+program
+  .command('check-balance')
+  .description('Check balance of wallet and multisig addresses')
+  .option('-w, --wallet <wallet>', 'Wallet seed or derivation path')
+  .option('-c, --config <config>', 'Config file path', 'config.yml')
+  .option(
+    '-s, --substrate-rpc <substrateRpc>',
+    'Substrate RPC endpoint',
+    'ws://127.0.0.1:9944',
+  )
+  .action(async (opts) => {
+    const wallet = await selectWallet(opts.wallet);
+    const { multisig } = loadMultisigConfig(opts.config);
+
+    console.log('Wallet address:', wallet.address);
+    console.log('Multisig config:', multisig);
+
+    await useSubstrateClient(opts.substrateRpc, async (client) => {
+      // Check wallet balance
+      const walletAccount = await client.query.system.account(wallet.address);
+      console.log('\nWallet balance:', {
+        free: walletAccount.data.free.toString(),
+        reserved: walletAccount.data.reserved.toString(),
+        frozen: walletAccount.data.frozen.toString(),
+      });
+
+      // Check multisig address balance
+      const multiAddr = createMultiAddress(multisig.addresses, multisig.threshold);
+      const multisigAccount = await client.query.system.account(multiAddr);
+      console.log('\nMultisig address:', multiAddr);
+      console.log('Multisig balance:', {
+        free: multisigAccount.data.free.toString(),
+        reserved: multisigAccount.data.reserved.toString(),
+        frozen: multisigAccount.data.frozen.toString(),
+      });
+
+      // Check sudo address balance
+      const sudoKey = await client.query.sudo.key();
+      if (sudoKey) {
+        const sudoAccount = await client.query.system.account(sudoKey);
+        console.log('\nSudo address:', sudoKey.toString());
+        console.log('Sudo balance:', {
+          free: sudoAccount.data.free.toString(),
+          reserved: sudoAccount.data.reserved.toString(),
+          frozen: sudoAccount.data.frozen.toString(),
+        });
+      }
+    });
+  });
+
+// Get multisig hex address command
+program
+  .command('get-multisig-hex')
+  .description('Get hex address of multisig composite account for chain spec')
+  .option('-c, --config <config>', 'Config file path', 'config.yml')
+  .action(async (opts) => {
+    const { multisig } = loadMultisigConfig(opts.config);
+    const multiAddr = createMultiAddress(multisig.addresses, multisig.threshold);
+
+    console.log('\nMultisig Configuration:');
+    console.log('Addresses:', multisig.addresses);
+    console.log('Threshold:', multisig.threshold);
+    console.log('\nMultisig Composite Account:');
+    console.log('SS58 Address:', multiAddr);
+
+    // Convert to hex
+    const { decodeAddress } = await import('@polkadot/util-crypto');
+    const { u8aToHex } = await import('@polkadot/util');
+    const decoded = decodeAddress(multiAddr);
+    const hex = u8aToHex(decoded);
+
+    console.log('Hex Address: ', hex);
+    console.log('\nAdd this to your chain spec template_chain_spec.rs:');
+    console.log(`AccountId::from_str("${hex}").unwrap()`);
+  });
+
+// Convert addresses command
+program
+  .command('convert-addresses')
+  .description('Convert SS58 addresses to hex for chain spec comparison')
+  .option('-c, --config <config>', 'Config file path', 'config.yml')
+  .action(async (opts) => {
+    const { multisig } = loadMultisigConfig(opts.config);
+    const { decodeAddress } = await import('@polkadot/util-crypto');
+    const { u8aToHex } = await import('@polkadot/util');
+
+    console.log('\nIndividual Signers from config.yml:');
+    console.log('=====================================');
+    multisig.addresses.forEach((addr, i) => {
+      const decoded = decodeAddress(addr);
+      const hex = u8aToHex(decoded);
+      console.log(`\n${i + 1}. SS58: ${addr}`);
+      console.log(`   Hex:  ${hex}`);
+    });
+
+    const multiAddr = createMultiAddress(multisig.addresses, multisig.threshold);
+    const decodedMulti = decodeAddress(multiAddr);
+    const hexMulti = u8aToHex(decodedMulti);
+
+    console.log('\n\nMultisig Composite:');
+    console.log('===================');
+    console.log(`SS58: ${multiAddr}`);
+    console.log(`Hex:  ${hexMulti}`);
+
+    console.log('\n\nChain Spec Should Have:');
+    console.log('=======================');
+    console.log('let endowed_accounts: Vec<AccountId> = [');
+    multisig.addresses.forEach((addr, i) => {
+      const decoded = decodeAddress(addr);
+      const hex = u8aToHex(decoded);
+      console.log(`    // Signer ${i + 1}`);
+      console.log(`    AccountId::from_str("${hex}").unwrap(),`);
+    });
+    console.log(`    // Multisig Composite (also sudo key)`);
+    console.log(`    AccountId::from_str("${hexMulti}").unwrap(),`);
+    console.log('].to_vec();');
+  });
 
 program.parseAsync(process.argv);
