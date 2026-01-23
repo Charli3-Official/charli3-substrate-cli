@@ -89,9 +89,13 @@ async function executeMultisigTx({
     await waitForTx(client);
   } catch (error: any) {
     // Handle WebSocket timeout gracefully
-    if (error?.message?.includes('No new blocks received') ||
-        error?.message?.includes('Websocket connection does not exist')) {
-      console.log('\n⚠️  WebSocket subscription timed out, but transaction may have been included.');
+    if (
+      error?.message?.includes('No new blocks received') ||
+      error?.message?.includes('Websocket connection does not exist')
+    ) {
+      console.log(
+        '\n⚠️  WebSocket subscription timed out, but transaction may have been included.',
+      );
       console.log('Checking transaction status via polling...\n');
       txIncluded = true; // Assume included and verify below
     } else {
@@ -343,11 +347,7 @@ program
   .description('Check balance of wallet and multisig addresses')
   .option('-w, --wallet <wallet>', 'Wallet seed or derivation path')
   .option('-c, --config <config>', 'Config file path', 'config.yml')
-  .option(
-    '-s, --substrate-rpc <substrateRpc>',
-    'Substrate RPC endpoint',
-    'ws://127.0.0.1:9944',
-  )
+  .option('-s, --substrate-rpc <substrateRpc>', 'Substrate RPC endpoint', 'ws://127.0.0.1:9944')
   .action(async (opts) => {
     const wallet = await selectWallet(opts.wallet);
     const { multisig } = loadMultisigConfig(opts.config);
