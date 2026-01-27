@@ -6,9 +6,9 @@ import { calculateSafeWeight, txCallback, waitForTx } from './service/tx.js';
 import { loadCliConfig, loadMultisigConfig } from './service/config.js';
 import { AccountId32, type Bytes } from 'dedot/codecs';
 import type { KeyringPair } from '@polkadot/keyring/types';
-import type { DedotClient } from 'dedot';
+import type { LegacyClient } from 'dedot';
 import type {
-  Charli3SubstrateRuntimeApi,
+  CardanoSidechainApi,
   PalletMultisigTimepoint,
 } from './charli3-substrate-runtime/index.js';
 import type { ChainSubmittableExtrinsic } from './charli3-substrate-runtime/tx.js';
@@ -25,7 +25,7 @@ program.name('charli3').description('Oracle platform CLI').version('1.0.0');
 
 // Generic multisig transaction executor
 interface MultisigTxParams {
-  client: DedotClient<Charli3SubstrateRuntimeApi>;
+  client: LegacyClient<CardanoSidechainApi>;
   wallet: KeyringPair;
   multisigAddresses: string[];
   threshold: number;

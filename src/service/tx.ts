@@ -1,6 +1,6 @@
 import type { ISubmittableResult, TxPaymentInfo } from 'dedot/types';
-import type { DedotClient } from 'dedot';
-import type { Charli3SubstrateRuntimeApi } from '../charli3-substrate-runtime/index.js';
+import type { LegacyClient } from 'dedot';
+import type { CardanoSidechainApi } from '../charli3-substrate-runtime/index.js';
 
 export { txCallback, waitForTx, calculateSafeWeight };
 
@@ -26,7 +26,7 @@ function txCallback<TxResult extends ISubmittableResult = ISubmittableResult>(
   }
 }
 
-async function waitForTx(client: DedotClient<Charli3SubstrateRuntimeApi>) {
+async function waitForTx(client: LegacyClient<CardanoSidechainApi>) {
   const waitTime = Number(client.consts.aura.slotDuration) + 1_000;
   console.log(`Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`);
   await new Promise((resolve) => setTimeout(resolve, waitTime));

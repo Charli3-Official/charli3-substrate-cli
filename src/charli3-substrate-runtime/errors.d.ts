@@ -271,6 +271,52 @@ export interface ChainErrors extends GenericChainErrors {
     [error: string]: GenericPalletError;
   };
   /**
+   * Pallet `SessionCommitteeManagement`'s errors
+   **/
+  sessionCommitteeManagement: {
+    InvalidEpoch: GenericPalletError;
+    UnnecessarySetCall: GenericPalletError;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError;
+  };
+  /**
+   * Pallet `PalletSession`'s errors
+   **/
+  palletSession: {
+    /**
+     * Invalid ownership proof.
+     **/
+    InvalidProof: GenericPalletError;
+
+    /**
+     * No associated validator ID for account.
+     **/
+    NoAssociatedValidatorId: GenericPalletError;
+
+    /**
+     * Registered duplicate key.
+     **/
+    DuplicatedKey: GenericPalletError;
+
+    /**
+     * No keys are associated with this account.
+     **/
+    NoKeys: GenericPalletError;
+
+    /**
+     * Key setting account is not live, so it's impossible to associate keys.
+     **/
+    NoAccount: GenericPalletError;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError;
+  };
+  /**
    * Pallet `Oracle`'s errors
    **/
   oracle: {

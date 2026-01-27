@@ -6,11 +6,14 @@ import type {
   FrameSystemDispatchEventInfo,
   SpConsensusGrandpaAppPublic,
   FrameSupportTokensMiscBalanceStatus,
+  SidechainRuntimeRuntimeHoldReason,
+  PalletBalancesUnexpectedKind,
   PalletMultisigTimepoint,
-  PalletOracleOracleMessage,
+  SidechainDomainNativeTokenAmount,
+  Charli3OracleCorePalletOracleMessage,
   SpRuntimeMultiSignature,
-  PalletOracleAggregationState,
-  PalletOracleConsensusConfiguration,
+  Charli3OracleCorePalletAggregationState,
+  Charli3OracleCoreConfigNodeConsensusConfiguration,
 } from './types.js';
 
 export interface ChainEvents extends GenericChainEvents {
@@ -189,9 +192,19 @@ export interface ChainEvents extends GenericChainEvents {
     Minted: GenericPalletEvent<'Balances', 'Minted', { who: AccountId32; amount: bigint }>;
 
     /**
+     * Some credit was balanced and added to the TotalIssuance.
+     **/
+    MintedCredit: GenericPalletEvent<'Balances', 'MintedCredit', { amount: bigint }>;
+
+    /**
      * Some amount was burned from an account.
      **/
     Burned: GenericPalletEvent<'Balances', 'Burned', { who: AccountId32; amount: bigint }>;
+
+    /**
+     * Some debt has been dropped from the Total Issuance.
+     **/
+    BurnedDebt: GenericPalletEvent<'Balances', 'BurnedDebt', { amount: bigint }>;
 
     /**
      * Some amount was suspended from an account (it can be restored later).
@@ -245,6 +258,97 @@ export interface ChainEvents extends GenericChainEvents {
       'Balances',
       'TotalIssuanceForced',
       { old: bigint; new: bigint }
+    >;
+
+    /**
+     * Some balance was placed on hold.
+     **/
+    Held: GenericPalletEvent<
+      'Balances',
+      'Held',
+      {
+        reason: SidechainRuntimeRuntimeHoldReason;
+        who: AccountId32;
+        amount: bigint;
+      }
+    >;
+
+    /**
+     * Held balance was burned from an account.
+     **/
+    BurnedHeld: GenericPalletEvent<
+      'Balances',
+      'BurnedHeld',
+      {
+        reason: SidechainRuntimeRuntimeHoldReason;
+        who: AccountId32;
+        amount: bigint;
+      }
+    >;
+
+    /**
+     * A transfer of `amount` on hold from `source` to `dest` was initiated.
+     **/
+    TransferOnHold: GenericPalletEvent<
+      'Balances',
+      'TransferOnHold',
+      {
+        reason: SidechainRuntimeRuntimeHoldReason;
+        source: AccountId32;
+        dest: AccountId32;
+        amount: bigint;
+      }
+    >;
+
+    /**
+     * The `transferred` balance is placed on hold at the `dest` account.
+     **/
+    TransferAndHold: GenericPalletEvent<
+      'Balances',
+      'TransferAndHold',
+      {
+        reason: SidechainRuntimeRuntimeHoldReason;
+        source: AccountId32;
+        dest: AccountId32;
+        transferred: bigint;
+      }
+    >;
+
+    /**
+     * Some balance was released from hold.
+     **/
+    Released: GenericPalletEvent<
+      'Balances',
+      'Released',
+      {
+        reason: SidechainRuntimeRuntimeHoldReason;
+        who: AccountId32;
+        amount: bigint;
+      }
+    >;
+
+    /**
+     * An unexpected/defensive event was triggered.
+     **/
+    Unexpected: GenericPalletEvent<'Balances', 'Unexpected', PalletBalancesUnexpectedKind>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  /**
+   * Pallet `TransactionPayment`'s events
+   **/
+  transactionPayment: {
+    /**
+     * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+     * has been paid by `who`.
+     **/
+    TransactionFeePaid: GenericPalletEvent<
+      'TransactionPayment',
+      'TransactionFeePaid',
+      { who: AccountId32; actualFee: bigint; tip: bigint }
     >;
 
     /**
@@ -393,17 +497,76 @@ export interface ChainEvents extends GenericChainEvents {
     [prop: string]: GenericPalletEvent;
   };
   /**
-   * Pallet `TransactionPayment`'s events
+   * Pallet `SessionCommitteeManagement`'s events
    **/
-  transactionPayment: {
+  sessionCommitteeManagement: {
     /**
-     * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
-     * has been paid by `who`.
+     * Generic pallet event
      **/
-    TransactionFeePaid: GenericPalletEvent<
-      'TransactionPayment',
-      'TransactionFeePaid',
-      { who: AccountId32; actualFee: bigint; tip: bigint }
+    [prop: string]: GenericPalletEvent;
+  };
+  /**
+   * Pallet `PalletSession`'s events
+   **/
+  palletSession: {
+    /**
+     * New session has happened. Note that the argument is the session index, not the
+     * block number as the type might suggest.
+     **/
+    NewSession: GenericPalletEvent<'PalletSession', 'NewSession', { sessionIndex: number }>;
+
+    /**
+     * The `NewSession` event in the current block also implies a new validator set to be
+     * queued.
+     **/
+    NewQueued: GenericPalletEvent<'PalletSession', 'NewQueued', null>;
+
+    /**
+     * Validator has been disabled.
+     **/
+    ValidatorDisabled: GenericPalletEvent<
+      'PalletSession',
+      'ValidatorDisabled',
+      { validator: AccountId32 }
+    >;
+
+    /**
+     * Validator has been re-enabled.
+     **/
+    ValidatorReenabled: GenericPalletEvent<
+      'PalletSession',
+      'ValidatorReenabled',
+      { validator: AccountId32 }
+    >;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  /**
+   * Pallet `Session`'s events
+   **/
+  session: {
+    /**
+     * New session has happened. Note that the argument is the session index, not the
+     * block number as the type might suggest.
+     **/
+    NewSession: GenericPalletEvent<'Session', 'NewSession', { sessionIndex: number }>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  /**
+   * Pallet `NativeTokenManagement`'s events
+   **/
+  nativeTokenManagement: {
+    TokensTransfered: GenericPalletEvent<
+      'NativeTokenManagement',
+      'TokensTransfered',
+      SidechainDomainNativeTokenAmount
     >;
 
     /**
@@ -426,19 +589,19 @@ export interface ChainEvents extends GenericChainEvents {
       {
         who: AccountId32;
         when: number;
-        signatures: Array<[PalletOracleOracleMessage, SpRuntimeMultiSignature]>;
+        signatures: Array<[Charli3OracleCorePalletOracleMessage, SpRuntimeMultiSignature]>;
       }
     >;
     Status: GenericPalletEvent<
       'Oracle',
       'Status',
-      { currentState: PalletOracleAggregationState; block: number }
+      { currentState: Charli3OracleCorePalletAggregationState; block: number }
     >;
     UpdatedConfig: GenericPalletEvent<
       'Oracle',
       'UpdatedConfig',
       {
-        consensusConfig: PalletOracleConsensusConfiguration;
+        consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration;
         channelsToTradePairs: Array<[Bytes, Array<number>]>;
         block: number;
       }
