@@ -71,22 +71,68 @@ async function executeMultisigTx({
   let txIncluded = false;
 
   try {
-    const unsub = await txFinal.signAndSend(wallet, { tip: 0n }, async (result) => {
-      txCallback(result);
-      for (const e of result.events) {
-        if (e.event.pallet === 'Multisig' && e.event.palletEvent.name === 'NewMultisig') {
-          console.log(e.event.palletEvent.data);
-          txMultiHash = e.event.palletEvent.data.callHash;
-          console.log('tx id', txMultiHash);
-        }
-      }
-      if (result.status.type === 'BestChainBlockIncluded' || result.status.type === 'Finalized') {
-        txIncluded = true;
-      }
-      if (result.status.type === 'Finalized') await unsub();
-    });
+    // Use a promise that resolves when transaction is finalized
+    await new Promise<void>(async (resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Transaction timeout after 30 seconds'));
+      }, 30000); // 30 second timeout
 
-    await waitForTx(client);
+      const unsub = await txFinal.signAndSend(wallet, { tip: 0n }, async (result) => {
+        // Debug: Log transaction status with details
+        console.log(`🔔 Transaction status: ${result.status.type}`);
+
+        txCallback(result);
+
+        // Debug: Log all events
+        console.log('📋 Transaction events:', result.events.length);
+
+        if (result.events.length > 0) {
+          for (const e of result.events) {
+            console.log(`  - ${e.event.pallet}.${e.event.palletEvent.name}`);
+
+            // Check for transaction failure
+            if (e.event.pallet === 'System' && e.event.palletEvent.name === 'ExtrinsicFailed') {
+              console.error(
+                '❌ Transaction failed:',
+                JSON.stringify(e.event.palletEvent.data, null, 2),
+              );
+              clearTimeout(timeout);
+              await unsub();
+              reject(new Error('Transaction failed'));
+              return;
+            }
+
+            if (e.event.pallet === 'Multisig' && e.event.palletEvent.name === 'NewMultisig') {
+              console.log('✅ NewMultisig event found!');
+              console.log(e.event.palletEvent.data);
+              txMultiHash = e.event.palletEvent.data.callHash;
+              console.log('tx id', txMultiHash);
+            }
+          }
+        } else {
+          console.log('  ⚠️  No events yet (waiting for block inclusion)');
+        }
+
+        if (result.status.type === 'BestChainBlockIncluded' || result.status.type === 'Finalized') {
+          console.log('✅ Transaction included in block!');
+          txIncluded = true;
+        }
+
+        if (result.status.type === 'Finalized') {
+          console.log('✅ Transaction finalized!');
+          clearTimeout(timeout);
+          await unsub();
+          resolve();
+        }
+
+        if (result.status.type === 'Drop') {
+          console.error('❌ Transaction dropped from pool');
+          clearTimeout(timeout);
+          await unsub();
+          reject(new Error('Transaction dropped'));
+        }
+      });
+    });
   } catch (error: any) {
     // Handle WebSocket timeout gracefully
     if (
