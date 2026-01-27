@@ -8,8 +8,9 @@ import type {
   Bytes,
   Digest,
   Phase,
-  FixedBytes,
   FixedU128,
+  FixedBytes,
+  BytesLike,
 } from 'dedot/codecs';
 import type {
   FrameSystemAccountInfo,
@@ -27,11 +28,21 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   FrameSupportTokensMiscIdAmount,
-  FrameSupportTokensMiscIdAmountRuntimeFreezeReason,
-  PalletMultisigMultisig,
+  FrameSupportTokensMiscIdAmount002,
   PalletTransactionPaymentReleases,
-  PalletOracleConfigNodeTradePair,
-  PalletOracleAggregationState,
+  PalletMultisigMultisig,
+  SidechainDomainScEpochNumber,
+  SidechainSlotsSlotsPerEpoch,
+  SidechainDomainUtxoId,
+  PalletSessionValidatorManagementCommitteeInfo,
+  SpSessionValidatorManagementMainChainScripts,
+  SidechainDomainByteStringSizedByteString,
+  SidechainRuntimeOpaqueSessionKeys,
+  SpStakingOffenceOffenceSeverity,
+  SpCoreCryptoKeyTypeId,
+  SpNativeTokenManagementMainChainScripts,
+  Charli3OracleCoreConfigNodeTradePair,
+  Charli3OracleCorePalletAggregationState,
 } from './types.js';
 
 export interface ChainStorage extends GenericChainStorage {
@@ -414,12 +425,33 @@ export interface ChainStorage extends GenericChainStorage {
      * Freeze locks on account balances.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<Array<FrameSupportTokensMiscIdAmountRuntimeFreezeReason>> =} callback
+     * @param {Callback<Array<FrameSupportTokensMiscIdAmount002>> =} callback
      **/
     freezes: GenericStorageQuery<
-      (arg: AccountId32Like) => Array<FrameSupportTokensMiscIdAmountRuntimeFreezeReason>,
+      (arg: AccountId32Like) => Array<FrameSupportTokensMiscIdAmount002>,
       AccountId32
     >;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  /**
+   * Pallet `TransactionPayment`'s storage queries
+   **/
+  transactionPayment: {
+    /**
+     *
+     * @param {Callback<FixedU128> =} callback
+     **/
+    nextFeeMultiplier: GenericStorageQuery<() => FixedU128>;
+
+    /**
+     *
+     * @param {Callback<PalletTransactionPaymentReleases> =} callback
+     **/
+    storageVersion: GenericStorageQuery<() => PalletTransactionPaymentReleases>;
 
     /**
      * Generic pallet storage query
@@ -463,20 +495,222 @@ export interface ChainStorage extends GenericChainStorage {
     [storage: string]: GenericStorageQuery;
   };
   /**
-   * Pallet `TransactionPayment`'s storage queries
+   * Pallet `Sidechain`'s storage queries
    **/
-  transactionPayment: {
+  sidechain: {
     /**
      *
-     * @param {Callback<FixedU128> =} callback
+     * @param {Callback<SidechainDomainScEpochNumber> =} callback
      **/
-    nextFeeMultiplier: GenericStorageQuery<() => FixedU128>;
+    epochNumber: GenericStorageQuery<() => SidechainDomainScEpochNumber>;
 
     /**
      *
-     * @param {Callback<PalletTransactionPaymentReleases> =} callback
+     * @param {Callback<SidechainSlotsSlotsPerEpoch> =} callback
      **/
-    storageVersion: GenericStorageQuery<() => PalletTransactionPaymentReleases>;
+    slotsPerEpoch: GenericStorageQuery<() => SidechainSlotsSlotsPerEpoch>;
+
+    /**
+     *
+     * @param {Callback<SidechainDomainUtxoId> =} callback
+     **/
+    genesisUtxo: GenericStorageQuery<() => SidechainDomainUtxoId>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  /**
+   * Pallet `SessionCommitteeManagement`'s storage queries
+   **/
+  sessionCommitteeManagement: {
+    /**
+     *
+     * @param {Callback<PalletSessionValidatorManagementCommitteeInfo> =} callback
+     **/
+    currentCommittee: GenericStorageQuery<() => PalletSessionValidatorManagementCommitteeInfo>;
+
+    /**
+     *
+     * @param {Callback<PalletSessionValidatorManagementCommitteeInfo | undefined> =} callback
+     **/
+    nextCommittee: GenericStorageQuery<
+      () => PalletSessionValidatorManagementCommitteeInfo | undefined
+    >;
+
+    /**
+     *
+     * @param {Callback<SpSessionValidatorManagementMainChainScripts> =} callback
+     **/
+    mainChainScriptsConfiguration: GenericStorageQuery<
+      () => SpSessionValidatorManagementMainChainScripts
+    >;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  /**
+   * Pallet `BlockRewards`'s storage queries
+   **/
+  blockRewards: {
+    /**
+     * Beneficiary of the current block
+     *
+     * @param {Callback<SidechainDomainByteStringSizedByteString | undefined> =} callback
+     **/
+    currentBlockBeneficiary: GenericStorageQuery<
+      () => SidechainDomainByteStringSizedByteString | undefined
+    >;
+
+    /**
+     * Accumulated rewards of all beneficiaries since last payout
+     *
+     * @param {SidechainDomainByteStringSizedByteString} arg
+     * @param {Callback<number | undefined> =} callback
+     **/
+    pendingRewards: GenericStorageQuery<
+      (arg: SidechainDomainByteStringSizedByteString) => number | undefined,
+      SidechainDomainByteStringSizedByteString
+    >;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  /**
+   * Pallet `PalletSession`'s storage queries
+   **/
+  palletSession: {
+    /**
+     * The current set of validators.
+     *
+     * @param {Callback<Array<AccountId32>> =} callback
+     **/
+    validators: GenericStorageQuery<() => Array<AccountId32>>;
+
+    /**
+     * Current index of the session.
+     *
+     * @param {Callback<number> =} callback
+     **/
+    currentIndex: GenericStorageQuery<() => number>;
+
+    /**
+     * True if the underlying economic identities or weighting behind the validators
+     * has changed in the queued validator set.
+     *
+     * @param {Callback<boolean> =} callback
+     **/
+    queuedChanged: GenericStorageQuery<() => boolean>;
+
+    /**
+     * The queued keys for the next session. When the next session begins, these keys
+     * will be used to determine the validator's session keys.
+     *
+     * @param {Callback<Array<[AccountId32, SidechainRuntimeOpaqueSessionKeys]>> =} callback
+     **/
+    queuedKeys: GenericStorageQuery<() => Array<[AccountId32, SidechainRuntimeOpaqueSessionKeys]>>;
+
+    /**
+     * Indices of disabled validators.
+     *
+     * The vec is always kept sorted so that we can find whether a given validator is
+     * disabled using binary search. It gets cleared when `on_session_ending` returns
+     * a new set of identities.
+     *
+     * @param {Callback<Array<[number, SpStakingOffenceOffenceSeverity]>> =} callback
+     **/
+    disabledValidators: GenericStorageQuery<() => Array<[number, SpStakingOffenceOffenceSeverity]>>;
+
+    /**
+     * The next session keys for a validator.
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<SidechainRuntimeOpaqueSessionKeys | undefined> =} callback
+     **/
+    nextKeys: GenericStorageQuery<
+      (arg: AccountId32Like) => SidechainRuntimeOpaqueSessionKeys | undefined,
+      AccountId32
+    >;
+
+    /**
+     * The owner of a key. The key is the `KeyTypeId` + the encoded key.
+     *
+     * @param {[SpCoreCryptoKeyTypeId, BytesLike]} arg
+     * @param {Callback<AccountId32 | undefined> =} callback
+     **/
+    keyOwner: GenericStorageQuery<
+      (arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined,
+      [SpCoreCryptoKeyTypeId, Bytes]
+    >;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  /**
+   * Pallet `Session`'s storage queries
+   **/
+  session: {
+    /**
+     *
+     * @param {Callback<Array<AccountId32>> =} callback
+     **/
+    validators: GenericStorageQuery<() => Array<AccountId32>>;
+
+    /**
+     *
+     * @param {Callback<Array<[AccountId32, SidechainRuntimeOpaqueSessionKeys]>> =} callback
+     **/
+    validatorsAndKeys: GenericStorageQuery<
+      () => Array<[AccountId32, SidechainRuntimeOpaqueSessionKeys]>
+    >;
+
+    /**
+     * Current index of the session.
+     *
+     * @param {Callback<number> =} callback
+     **/
+    currentIndex: GenericStorageQuery<() => number>;
+
+    /**
+     * Indices of disabled validators.
+     *
+     * The vec is always kept sorted so that we can find whether a given validator is
+     * disabled using binary search. It gets cleared when `on_session_ending` returns
+     * a new set of identities.
+     *
+     * @param {Callback<Array<number>> =} callback
+     **/
+    disabledValidators: GenericStorageQuery<() => Array<number>>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  /**
+   * Pallet `NativeTokenManagement`'s storage queries
+   **/
+  nativeTokenManagement: {
+    /**
+     *
+     * @param {Callback<SpNativeTokenManagementMainChainScripts | undefined> =} callback
+     **/
+    mainChainScriptsConfiguration: GenericStorageQuery<
+      () => SpNativeTokenManagementMainChainScripts | undefined
+    >;
+
+    /**
+     *
+     * @param {Callback<boolean> =} callback
+     **/
+    initialized: GenericStorageQuery<() => boolean>;
 
     /**
      * Generic pallet storage query
@@ -514,9 +748,9 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      *
-     * @param {Callback<Array<PalletOracleConfigNodeTradePair> | undefined> =} callback
+     * @param {Callback<Array<Charli3OracleCoreConfigNodeTradePair> | undefined> =} callback
      **/
-    tradePairs: GenericStorageQuery<() => Array<PalletOracleConfigNodeTradePair> | undefined>;
+    tradePairs: GenericStorageQuery<() => Array<Charli3OracleCoreConfigNodeTradePair> | undefined>;
 
     /**
      *
@@ -538,31 +772,33 @@ export interface ChainStorage extends GenericChainStorage {
      * NodesPrices store latest price for each node indexed by trade pair prefix
      * about hashers https://docs.substrate.io/build/runtime-storage/#common-substrate-hashers
      *
-     * @param {[PalletOracleConfigNodeTradePair, AccountId32Like]} arg
+     * @param {[Charli3OracleCoreConfigNodeTradePair, AccountId32Like]} arg
      * @param {Callback<[bigint, number] | undefined> =} callback
      **/
     nodesPrices: GenericStorageQuery<
-      (arg: [PalletOracleConfigNodeTradePair, AccountId32Like]) => [bigint, number] | undefined,
-      [PalletOracleConfigNodeTradePair, AccountId32]
+      (
+        arg: [Charli3OracleCoreConfigNodeTradePair, AccountId32Like],
+      ) => [bigint, number] | undefined,
+      [Charli3OracleCoreConfigNodeTradePair, AccountId32]
     >;
 
     /**
      * Prices after nodes "consensus"
      *
-     * @param {Callback<PalletOracleAggregationState | undefined> =} callback
+     * @param {Callback<Charli3OracleCorePalletAggregationState | undefined> =} callback
      **/
-    aggregation: GenericStorageQuery<() => PalletOracleAggregationState | undefined>;
+    aggregation: GenericStorageQuery<() => Charli3OracleCorePalletAggregationState | undefined>;
 
     /**
      * Signatures are indexed by oracle message timestamp.
      * Second key is the signatory pub key, value is the signature bytes.
      *
-     * @param {[bigint, AccountId32Like]} arg
+     * @param {[[BytesLike, bigint], AccountId32Like]} arg
      * @param {Callback<FixedBytes<64> | undefined> =} callback
      **/
     signatureStorage: GenericStorageQuery<
-      (arg: [bigint, AccountId32Like]) => FixedBytes<64> | undefined,
-      [bigint, AccountId32]
+      (arg: [[BytesLike, bigint], AccountId32Like]) => FixedBytes<64> | undefined,
+      [[Bytes, bigint], AccountId32]
     >;
 
     /**

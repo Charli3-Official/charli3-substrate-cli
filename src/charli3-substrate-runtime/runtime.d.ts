@@ -2,11 +2,11 @@
 
 import type { GenericRuntimeApis, GenericRuntimeApiMethod } from 'dedot/types';
 import type {
-  RuntimeVersion,
-  Header,
-  Bytes,
   Result,
   BytesLike,
+  Bytes,
+  RuntimeVersion,
+  Header,
   DispatchError,
   UncheckedExtrinsicLike,
   UncheckedExtrinsic,
@@ -17,8 +17,6 @@ import type {
   SpRuntimeBlock,
   SpRuntimeExtrinsicInclusionMode,
   SpCoreOpaqueMetadata,
-  FrameSupportViewFunctionsViewFunctionDispatchError,
-  FrameSupportViewFunctionsViewFunctionId,
   SpRuntimeTransactionValidityTransactionValidityError,
   SpInherentsInherentData,
   SpInherentsCheckInherentsResult,
@@ -33,10 +31,83 @@ import type {
   PalletTransactionPaymentRuntimeDispatchInfo,
   PalletTransactionPaymentFeeDetails,
   SpWeightsWeightV2Weight,
-  Charli3SubstrateRuntimeRuntimeCallLike,
+  SidechainRuntimeRuntimeCallLike,
+  SidechainDomainUtxoId,
+  SpSidechainSidechainStatus,
+  SidechainSlotsScSlotConfig,
+  SpSessionValidatorManagementMainChainScripts,
+  SidechainDomainScEpochNumber,
+  SidechainRuntimeOpaqueCrossChainAppPublic,
+  SidechainRuntimeOpaqueSessionKeys,
+  AuthoritySelectionInherentsAuthoritySelectionInputs,
+  AuthoritySelectionInherentsFilterInvalidCandidatesRegistrationDataError,
+  SidechainDomainMainchainPublicKey,
+  SidechainDomainRegistrationData,
+  AuthoritySelectionInherentsFilterInvalidCandidatesStakeError,
+  SidechainDomainStakeDelegation,
+  AuthoritySelectionInherentsFilterInvalidCandidatesPermissionedCandidateDataError,
+  SidechainDomainPermissionedCandidateData,
+  SpNativeTokenManagementMainChainScripts,
 } from './types.js';
 
 export interface RuntimeApis extends GenericRuntimeApis {
+  /**
+   * @runtimeapi: GenesisBuilder - 0xfbc577b9d747efd6
+   **/
+  genesisBuilder: {
+    /**
+     * Build `RuntimeGenesisConfig` from a JSON blob not using any defaults and store it in the
+     * storage.
+     *
+     * In the case of a FRAME-based runtime, this function deserializes the full
+     * `RuntimeGenesisConfig` from the given JSON blob and puts it into the storage. If the
+     * provided JSON blob is incorrect or incomplete or the deserialization fails, an error
+     * is returned.
+     *
+     * Please note that provided JSON blob must contain all `RuntimeGenesisConfig` fields, no
+     * defaults will be used.
+     *
+     * @callname: GenesisBuilder_build_state
+     * @param {BytesLike} json
+     **/
+    buildState: GenericRuntimeApiMethod<(json: BytesLike) => Promise<Result<[], string>>>;
+
+    /**
+     * Returns a JSON blob representation of the built-in `RuntimeGenesisConfig` identified by
+     * `id`.
+     *
+     * If `id` is `None` the function should return JSON blob representation of the default
+     * `RuntimeGenesisConfig` struct of the runtime. Implementation must provide default
+     * `RuntimeGenesisConfig`.
+     *
+     * Otherwise function returns a JSON representation of the built-in, named
+     * `RuntimeGenesisConfig` preset identified by `id`, or `None` if such preset does not
+     * exist. Returned `Vec<u8>` contains bytes of JSON blob (patch) which comprises a list of
+     * (potentially nested) key-value pairs that are intended for customizing the default
+     * runtime genesis config. The patch shall be merged (rfc7386) with the JSON representation
+     * of the default `RuntimeGenesisConfig` to create a comprehensive genesis config that can
+     * be used in `build_state` method.
+     *
+     * @callname: GenesisBuilder_get_preset
+     * @param {string | undefined} id
+     **/
+    getPreset: GenericRuntimeApiMethod<(id?: string | undefined) => Promise<Bytes | undefined>>;
+
+    /**
+     * Returns a list of identifiers for available builtin `RuntimeGenesisConfig` presets.
+     *
+     * The presets from the list can be queried with [`GenesisBuilder::get_preset`] method. If
+     * no named presets are provided by the runtime the list is empty.
+     *
+     * @callname: GenesisBuilder_preset_names
+     **/
+    presetNames: GenericRuntimeApiMethod<() => Promise<Array<string>>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
   /**
    * @runtimeapi: Core - 0xdf6acb689907609b
    **/
@@ -103,29 +174,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: Metadata_metadata_versions
      **/
     metadataVersions: GenericRuntimeApiMethod<() => Promise<Array<number>>>;
-
-    /**
-     * Generic runtime api call
-     **/
-    [method: string]: GenericRuntimeApiMethod;
-  };
-  /**
-   * @runtimeapi: RuntimeViewFunction - 0xccd9de6396c899ca
-   **/
-  runtimeViewFunction: {
-    /**
-     * Execute a view function query.
-     *
-     * @callname: RuntimeViewFunction_execute_view_function
-     * @param {FrameSupportViewFunctionsViewFunctionId} query_id
-     * @param {BytesLike} input
-     **/
-    executeViewFunction: GenericRuntimeApiMethod<
-      (
-        queryId: FrameSupportViewFunctionsViewFunctionId,
-        input: BytesLike,
-      ) => Promise<Result<Bytes, FrameSupportViewFunctionsViewFunctionDispatchError>>
-    >;
 
     /**
      * Generic runtime api call
@@ -452,12 +500,12 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Query information of a dispatch class, weight, and fee of a given encoded `Call`.
      *
      * @callname: TransactionPaymentCallApi_query_call_info
-     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {SidechainRuntimeRuntimeCallLike} call
      * @param {number} len
      **/
     queryCallInfo: GenericRuntimeApiMethod<
       (
-        call: Charli3SubstrateRuntimeRuntimeCallLike,
+        call: SidechainRuntimeRuntimeCallLike,
         len: number,
       ) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
     >;
@@ -466,12 +514,12 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Query fee details of a given encoded `Call`.
      *
      * @callname: TransactionPaymentCallApi_query_call_fee_details
-     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {SidechainRuntimeRuntimeCallLike} call
      * @param {number} len
      **/
     queryCallFeeDetails: GenericRuntimeApiMethod<
       (
-        call: Charli3SubstrateRuntimeRuntimeCallLike,
+        call: SidechainRuntimeRuntimeCallLike,
         len: number,
       ) => Promise<PalletTransactionPaymentFeeDetails>
     >;
@@ -498,56 +546,176 @@ export interface RuntimeApis extends GenericRuntimeApis {
     [method: string]: GenericRuntimeApiMethod;
   };
   /**
-   * @runtimeapi: GenesisBuilder - 0xfbc577b9d747efd6
+   * @runtimeapi: GetGenesisUtxo - 0xd9bc84ac3bfb8a0c
    **/
-  genesisBuilder: {
+  getGenesisUtxo: {
     /**
-     * Build `RuntimeGenesisConfig` from a JSON blob not using any defaults and store it in the
-     * storage.
      *
-     * In the case of a FRAME-based runtime, this function deserializes the full
-     * `RuntimeGenesisConfig` from the given JSON blob and puts it into the storage. If the
-     * provided JSON blob is incorrect or incomplete or the deserialization fails, an error
-     * is returned.
-     *
-     * Please note that provided JSON blob must contain all `RuntimeGenesisConfig` fields, no
-     * defaults will be used.
-     *
-     * @callname: GenesisBuilder_build_state
-     * @param {BytesLike} json
+     * @callname: GetGenesisUtxo_genesis_utxo
      **/
-    buildState: GenericRuntimeApiMethod<(json: BytesLike) => Promise<Result<[], string>>>;
+    genesisUtxo: GenericRuntimeApiMethod<() => Promise<SidechainDomainUtxoId>>;
 
     /**
-     * Returns a JSON blob representation of the built-in `RuntimeGenesisConfig` identified by
-     * `id`.
-     *
-     * If `id` is `None` the function should return JSON blob representation of the default
-     * `RuntimeGenesisConfig` struct of the runtime. Implementation must provide default
-     * `RuntimeGenesisConfig`.
-     *
-     * Otherwise function returns a JSON representation of the built-in, named
-     * `RuntimeGenesisConfig` preset identified by `id`, or `None` if such preset does not
-     * exist. Returned `Vec<u8>` contains bytes of JSON blob (patch) which comprises a list of
-     * (potentially nested) key-value pairs that are intended for customizing the default
-     * runtime genesis config. The patch shall be merged (rfc7386) with the JSON representation
-     * of the default `RuntimeGenesisConfig` to create a comprehensive genesis config that can
-     * be used in `build_state` method.
-     *
-     * @callname: GenesisBuilder_get_preset
-     * @param {string | undefined} id
+     * Generic runtime api call
      **/
-    getPreset: GenericRuntimeApiMethod<(id?: string | undefined) => Promise<Bytes | undefined>>;
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: GetSidechainStatus - 0xa0c89371ec56244c
+   **/
+  getSidechainStatus: {
+    /**
+     *
+     * @callname: GetSidechainStatus_get_sidechain_status
+     **/
+    getSidechainStatus: GenericRuntimeApiMethod<() => Promise<SpSidechainSidechainStatus>>;
 
     /**
-     * Returns a list of identifiers for available builtin `RuntimeGenesisConfig` presets.
-     *
-     * The presets from the list can be queried with [`GenesisBuilder::get_preset`] method. If
-     * no named presets are provided by the runtime the list is empty.
-     *
-     * @callname: GenesisBuilder_preset_names
+     * Generic runtime api call
      **/
-    presetNames: GenericRuntimeApiMethod<() => Promise<Array<string>>>;
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: SlotApi - 0xc7805fd5ec973a86
+   **/
+  slotApi: {
+    /**
+     *
+     * @callname: SlotApi_slot_config
+     **/
+    slotConfig: GenericRuntimeApiMethod<() => Promise<SidechainSlotsScSlotConfig>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: SessionValidatorManagementApi - 0x19dba14093498f16
+   **/
+  sessionValidatorManagementApi: {
+    /**
+     *
+     * @callname: SessionValidatorManagementApi_get_main_chain_scripts
+     **/
+    getMainChainScripts: GenericRuntimeApiMethod<
+      () => Promise<SpSessionValidatorManagementMainChainScripts>
+    >;
+
+    /**
+     *
+     * @callname: SessionValidatorManagementApi_get_current_committee
+     **/
+    getCurrentCommittee: GenericRuntimeApiMethod<
+      () => Promise<
+        [SidechainDomainScEpochNumber, Array<SidechainRuntimeOpaqueCrossChainAppPublic>]
+      >
+    >;
+
+    /**
+     *
+     * @callname: SessionValidatorManagementApi_get_next_committee
+     **/
+    getNextCommittee: GenericRuntimeApiMethod<
+      () => Promise<
+        [SidechainDomainScEpochNumber, Array<SidechainRuntimeOpaqueCrossChainAppPublic>] | undefined
+      >
+    >;
+
+    /**
+     *
+     * @callname: SessionValidatorManagementApi_get_next_unset_epoch_number
+     **/
+    getNextUnsetEpochNumber: GenericRuntimeApiMethod<() => Promise<SidechainDomainScEpochNumber>>;
+
+    /**
+     *
+     * @callname: SessionValidatorManagementApi_calculate_committee
+     * @param {AuthoritySelectionInherentsAuthoritySelectionInputs} authority_selection_inputs
+     * @param {SidechainDomainScEpochNumber} sidechain_epoch
+     **/
+    calculateCommittee: GenericRuntimeApiMethod<
+      (
+        authoritySelectionInputs: AuthoritySelectionInherentsAuthoritySelectionInputs,
+        sidechainEpoch: SidechainDomainScEpochNumber,
+      ) => Promise<
+        | Array<[SidechainRuntimeOpaqueCrossChainAppPublic, SidechainRuntimeOpaqueSessionKeys]>
+        | undefined
+      >
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: CandidateValidationApi - 0x279a32908e96410d
+   **/
+  candidateValidationApi: {
+    /**
+     *
+     * @callname: CandidateValidationApi_validate_registered_candidate_data
+     * @param {SidechainDomainMainchainPublicKey} mainchain_pub_key
+     * @param {SidechainDomainRegistrationData} registration_data
+     **/
+    validateRegisteredCandidateData: GenericRuntimeApiMethod<
+      (
+        mainchainPubKey: SidechainDomainMainchainPublicKey,
+        registrationData: SidechainDomainRegistrationData,
+      ) => Promise<
+        AuthoritySelectionInherentsFilterInvalidCandidatesRegistrationDataError | undefined
+      >
+    >;
+
+    /**
+     *
+     * @callname: CandidateValidationApi_validate_stake
+     * @param {SidechainDomainStakeDelegation | undefined} stake
+     **/
+    validateStake: GenericRuntimeApiMethod<
+      (
+        stake?: SidechainDomainStakeDelegation | undefined,
+      ) => Promise<AuthoritySelectionInherentsFilterInvalidCandidatesStakeError | undefined>
+    >;
+
+    /**
+     *
+     * @callname: CandidateValidationApi_validate_permissioned_candidate_data
+     * @param {SidechainDomainPermissionedCandidateData} candidate
+     **/
+    validatePermissionedCandidateData: GenericRuntimeApiMethod<
+      (
+        candidate: SidechainDomainPermissionedCandidateData,
+      ) => Promise<
+        AuthoritySelectionInherentsFilterInvalidCandidatesPermissionedCandidateDataError | undefined
+      >
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: NativeTokenManagementApi - 0x7e7a86948600f49b
+   **/
+  nativeTokenManagementApi: {
+    /**
+     *
+     * @callname: NativeTokenManagementApi_get_main_chain_scripts
+     **/
+    getMainChainScripts: GenericRuntimeApiMethod<
+      () => Promise<SpNativeTokenManagementMainChainScripts | undefined>
+    >;
+
+    /**
+     * Gets current initializaion status and set it to `true` afterwards. This check is used to
+     * determine whether historical data from the beginning of main chain should be queried.
+     *
+     * @callname: NativeTokenManagementApi_initialized
+     **/
+    initialized: GenericRuntimeApiMethod<() => Promise<boolean>>;
 
     /**
      * Generic runtime api call

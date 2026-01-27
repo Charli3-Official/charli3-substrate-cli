@@ -1,8 +1,8 @@
-import { DedotClient, WsProvider } from 'dedot';
+import { LegacyClient, WsProvider } from 'dedot';
 
 import type {
-  Charli3SubstrateRuntimeApi,
-  PalletOracleConsensusConfiguration,
+  CardanoSidechainApi,
+  Charli3OracleCoreConfigNodeConsensusConfiguration,
 } from '../charli3-substrate-runtime/index.js';
 import type { Bytes } from 'dedot/codecs';
 
@@ -10,15 +10,13 @@ export { getCurrentConfig, useSubstrateClient };
 export type { OracleConfig, PalletOracleMessagesConfiguration };
 
 interface OracleConfig {
-  consensus: PalletOracleConsensusConfiguration;
+  consensus: Charli3OracleCoreConfigNodeConsensusConfiguration;
   messages: PalletOracleMessagesConfiguration;
 }
 
 type PalletOracleMessagesConfiguration = [Bytes, number[]][];
 
-async function getCurrentConfig(
-  client: DedotClient<Charli3SubstrateRuntimeApi>,
-): Promise<OracleConfig> {
+async function getCurrentConfig(client: LegacyClient<CardanoSidechainApi>): Promise<OracleConfig> {
   const minNodesForTrustedAggregation = await client.query.oracle.minNodesForTrustedAggregation();
   const feedAge = await client.query.oracle.feedAge();
   const outliersRange = await client.query.oracle.outliersRange();
@@ -50,13 +48,13 @@ async function getCurrentConfig(
 
 async function useSubstrateClient(
   wsJsonRpcUrl: string,
-  action: (client: DedotClient<Charli3SubstrateRuntimeApi>) => Promise<void>,
+  action: (client: LegacyClient<CardanoSidechainApi>) => Promise<void>,
 ) {
   let provider;
   try {
     // Connect
     provider = new WsProvider(wsJsonRpcUrl);
-    const client = await DedotClient.new<Charli3SubstrateRuntimeApi>(provider);
+    const client = await LegacyClient.new<CardanoSidechainApi>(provider);
     // Use
     await action(client);
   } finally {
