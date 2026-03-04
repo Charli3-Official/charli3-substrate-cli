@@ -33,3 +33,6 @@ oracleConfig:
     - ['0x1234abcdef', [0, 1]]
     - ['0xcafefacade', [2]]
     - ['fluid', [0, 1, 2]]
+  reward:
+    rewardPolicyId: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
+    rewardAssetName: 'Charli3'

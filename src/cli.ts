@@ -120,6 +120,7 @@ async function handleConfigUpdate(
     const oracleCall = client.tx.oracle.sudoSetConfig(
       oracleConfig.consensus,
       oracleConfig.messages,
+      oracleConfig.reward,
     );
     const sudoCall = client.tx.sudo.sudo(oracleCall.call);
 

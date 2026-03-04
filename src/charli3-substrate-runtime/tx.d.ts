@@ -17,7 +17,7 @@ import type {
   FixedBytes,
 } from 'dedot/codecs';
 import type {
-  Charli3SubstrateRuntimeRuntimeCallLike,
+  SidechainRuntimeRuntimeCallLike,
   SpRuntimeMultiSignature,
   FrameSystemEventRecord,
   SpConsensusGrandpaEquivocationProof,
@@ -25,20 +25,29 @@ import type {
   PalletBalancesAdjustmentDirection,
   SpWeightsWeightV2Weight,
   PalletMultisigTimepoint,
-  PalletOracleConfigNodeTradePair,
-  PalletOracleOracleMessage,
-  PalletOracleConsensusConfiguration,
+  SidechainRuntimeOpaqueCrossChainAppPublic,
+  SidechainRuntimeOpaqueSessionKeys,
+  SidechainDomainScEpochNumber,
+  SidechainDomainMainchainAddress,
+  SidechainDomainPolicyId,
+  SidechainDomainByteStringSizedByteString,
+  SidechainDomainNativeTokenAmount,
+  SidechainDomainAssetName,
+  Charli3OracleCoreConfigNodeTradePair,
+  Charli3OracleCorePalletOracleMessage,
+  Charli3OracleCoreConfigNodeConsensusConfiguration,
+  Charli3OracleCoreConfigNodeRewardConfiguration,
 } from './types.js';
 
 export type ChainSubmittableExtrinsic<
-  T extends IRuntimeTxCall = Charli3SubstrateRuntimeRuntimeCallLike,
+  T extends IRuntimeTxCall = SidechainRuntimeRuntimeCallLike,
   ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes,
 > = Extrinsic<MultiAddressLike, T, SpRuntimeMultiSignature, ChainKnownTypes['Extra']> &
   ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>, ChainKnownTypes['AssetId']>;
 
 export type TxCall<ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes> = (
   ...args: any[]
-) => ChainSubmittableExtrinsic<Charli3SubstrateRuntimeRuntimeCallLike, ChainKnownTypes>;
+) => ChainSubmittableExtrinsic<SidechainRuntimeRuntimeCallLike, ChainKnownTypes>;
 
 export interface ChainTx<
   ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes,
@@ -694,15 +703,15 @@ export interface ChainTx<
     /**
      * Authenticates the sudo key and dispatches a function call with `Root` origin.
      *
-     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {SidechainRuntimeRuntimeCallLike} call
      **/
     sudo: GenericTxCall<
-      (call: Charli3SubstrateRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<
+      (call: SidechainRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<
         {
           pallet: 'Sudo';
           palletCall: {
             name: 'Sudo';
-            params: { call: Charli3SubstrateRuntimeRuntimeCallLike };
+            params: { call: SidechainRuntimeRuntimeCallLike };
           };
         },
         ChainKnownTypes
@@ -716,12 +725,12 @@ export interface ChainTx<
      *
      * The dispatch origin for this call must be _Signed_.
      *
-     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {SidechainRuntimeRuntimeCallLike} call
      * @param {SpWeightsWeightV2Weight} weight
      **/
     sudoUncheckedWeight: GenericTxCall<
       (
-        call: Charli3SubstrateRuntimeRuntimeCallLike,
+        call: SidechainRuntimeRuntimeCallLike,
         weight: SpWeightsWeightV2Weight,
       ) => ChainSubmittableExtrinsic<
         {
@@ -729,7 +738,7 @@ export interface ChainTx<
           palletCall: {
             name: 'SudoUncheckedWeight';
             params: {
-              call: Charli3SubstrateRuntimeRuntimeCallLike;
+              call: SidechainRuntimeRuntimeCallLike;
               weight: SpWeightsWeightV2Weight;
             };
           };
@@ -764,12 +773,12 @@ export interface ChainTx<
      * The dispatch origin for this call must be _Signed_.
      *
      * @param {MultiAddressLike} who
-     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {SidechainRuntimeRuntimeCallLike} call
      **/
     sudoAs: GenericTxCall<
       (
         who: MultiAddressLike,
-        call: Charli3SubstrateRuntimeRuntimeCallLike,
+        call: SidechainRuntimeRuntimeCallLike,
       ) => ChainSubmittableExtrinsic<
         {
           pallet: 'Sudo';
@@ -777,7 +786,7 @@ export interface ChainTx<
             name: 'SudoAs';
             params: {
               who: MultiAddressLike;
-              call: Charli3SubstrateRuntimeRuntimeCallLike;
+              call: SidechainRuntimeRuntimeCallLike;
             };
           };
         },
@@ -827,12 +836,12 @@ export interface ChainTx<
      * O(Z + C) where Z is the length of the call and C its execution weight.
      *
      * @param {Array<AccountId32Like>} otherSignatories
-     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {SidechainRuntimeRuntimeCallLike} call
      **/
     asMultiThreshold1: GenericTxCall<
       (
         otherSignatories: Array<AccountId32Like>,
-        call: Charli3SubstrateRuntimeRuntimeCallLike,
+        call: SidechainRuntimeRuntimeCallLike,
       ) => ChainSubmittableExtrinsic<
         {
           pallet: 'Multisig';
@@ -840,7 +849,7 @@ export interface ChainTx<
             name: 'AsMultiThreshold1';
             params: {
               otherSignatories: Array<AccountId32Like>;
-              call: Charli3SubstrateRuntimeRuntimeCallLike;
+              call: SidechainRuntimeRuntimeCallLike;
             };
           };
         },
@@ -892,7 +901,7 @@ export interface ChainTx<
      * @param {number} threshold
      * @param {Array<AccountId32Like>} otherSignatories
      * @param {PalletMultisigTimepoint | undefined} maybeTimepoint
-     * @param {Charli3SubstrateRuntimeRuntimeCallLike} call
+     * @param {SidechainRuntimeRuntimeCallLike} call
      * @param {SpWeightsWeightV2Weight} maxWeight
      **/
     asMulti: GenericTxCall<
@@ -900,7 +909,7 @@ export interface ChainTx<
         threshold: number,
         otherSignatories: Array<AccountId32Like>,
         maybeTimepoint: PalletMultisigTimepoint | undefined,
-        call: Charli3SubstrateRuntimeRuntimeCallLike,
+        call: SidechainRuntimeRuntimeCallLike,
         maxWeight: SpWeightsWeightV2Weight,
       ) => ChainSubmittableExtrinsic<
         {
@@ -911,7 +920,7 @@ export interface ChainTx<
               threshold: number;
               otherSignatories: Array<AccountId32Like>;
               maybeTimepoint: PalletMultisigTimepoint | undefined;
-              call: Charli3SubstrateRuntimeRuntimeCallLike;
+              call: SidechainRuntimeRuntimeCallLike;
               maxWeight: SpWeightsWeightV2Weight;
             };
           };
@@ -1080,21 +1089,244 @@ export interface ChainTx<
     [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
+   * Pallet `SessionCommitteeManagement`'s transaction calls
+   **/
+  sessionCommitteeManagement: {
+    /**
+     * 'for_epoch_number' parameter is needed only for validation purposes, because we need to make sure that
+     * check_inherent uses the same epoch_number as was used to create inherent data.
+     * Alternative approach would be to put epoch number inside InherentData. However, sidechain
+     * epoch number is set in Runtime, thus, inherent data provider doesn't have to know about it.
+     * On top of that, the latter approach is slightly more complicated to code.
+     *
+     * @param {Array<[SidechainRuntimeOpaqueCrossChainAppPublic, SidechainRuntimeOpaqueSessionKeys]>} validators
+     * @param {SidechainDomainScEpochNumber} forEpochNumber
+     **/
+    set: GenericTxCall<
+      (
+        validators: Array<
+          [SidechainRuntimeOpaqueCrossChainAppPublic, SidechainRuntimeOpaqueSessionKeys]
+        >,
+        forEpochNumber: SidechainDomainScEpochNumber,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SessionCommitteeManagement';
+          palletCall: {
+            name: 'Set';
+            params: {
+              validators: Array<
+                [SidechainRuntimeOpaqueCrossChainAppPublic, SidechainRuntimeOpaqueSessionKeys]
+              >;
+              forEpochNumber: SidechainDomainScEpochNumber;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     * Changes the main chain scripts used for committee rotation.
+     *
+     * This extrinsic must be run either using `sudo` or some other chain governance mechanism.
+     *
+     * @param {SidechainDomainMainchainAddress} committeeCandidateAddress
+     * @param {SidechainDomainPolicyId} dParameterPolicyId
+     * @param {SidechainDomainPolicyId} permissionedCandidatesPolicyId
+     **/
+    setMainChainScripts: GenericTxCall<
+      (
+        committeeCandidateAddress: SidechainDomainMainchainAddress,
+        dParameterPolicyId: SidechainDomainPolicyId,
+        permissionedCandidatesPolicyId: SidechainDomainPolicyId,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SessionCommitteeManagement';
+          palletCall: {
+            name: 'SetMainChainScripts';
+            params: {
+              committeeCandidateAddress: SidechainDomainMainchainAddress;
+              dParameterPolicyId: SidechainDomainPolicyId;
+              permissionedCandidatesPolicyId: SidechainDomainPolicyId;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
+  };
+  /**
+   * Pallet `BlockRewards`'s transaction calls
+   **/
+  blockRewards: {
+    /**
+     *
+     * @param {SidechainDomainByteStringSizedByteString} beneficiary
+     **/
+    setCurrentBlockBeneficiary: GenericTxCall<
+      (beneficiary: SidechainDomainByteStringSizedByteString) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'BlockRewards';
+          palletCall: {
+            name: 'SetCurrentBlockBeneficiary';
+            params: { beneficiary: SidechainDomainByteStringSizedByteString };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
+  };
+  /**
+   * Pallet `PalletSession`'s transaction calls
+   **/
+  palletSession: {
+    /**
+     * Sets the session key(s) of the function caller to `keys`.
+     * Allows an account to set its session key prior to becoming a validator.
+     * This doesn't take effect until the next session.
+     *
+     * The dispatch origin of this function must be signed.
+     *
+     * ## Complexity
+     * - `O(1)`. Actual cost depends on the number of length of `T::Keys::key_ids()` which is
+     * fixed.
+     *
+     * @param {SidechainRuntimeOpaqueSessionKeys} keys
+     * @param {BytesLike} proof
+     **/
+    setKeys: GenericTxCall<
+      (
+        keys: SidechainRuntimeOpaqueSessionKeys,
+        proof: BytesLike,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PalletSession';
+          palletCall: {
+            name: 'SetKeys';
+            params: {
+              keys: SidechainRuntimeOpaqueSessionKeys;
+              proof: BytesLike;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     * Removes any session key(s) of the function caller.
+     *
+     * This doesn't take effect until the next session.
+     *
+     * The dispatch origin of this function must be Signed and the account must be either be
+     * convertible to a validator ID using the chain's typical addressing system (this usually
+     * means being a controller account) or directly convertible into a validator ID (which
+     * usually means being a stash account).
+     *
+     * ## Complexity
+     * - `O(1)` in number of key types. Actual cost depends on the number of length of
+     * `T::Keys::key_ids()` which is fixed.
+     *
+     **/
+    purgeKeys: GenericTxCall<
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PalletSession';
+          palletCall: {
+            name: 'PurgeKeys';
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
+  };
+  /**
+   * Pallet `NativeTokenManagement`'s transaction calls
+   **/
+  nativeTokenManagement: {
+    /**
+     *
+     * @param {SidechainDomainNativeTokenAmount} tokenAmount
+     **/
+    transferTokens: GenericTxCall<
+      (tokenAmount: SidechainDomainNativeTokenAmount) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NativeTokenManagement';
+          palletCall: {
+            name: 'TransferTokens';
+            params: { tokenAmount: SidechainDomainNativeTokenAmount };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     * Changes the main chain scripts used for observing native token transfers.
+     *
+     * This extrinsic must be run either using `sudo` or some other chain governance mechanism.
+     *
+     * @param {SidechainDomainPolicyId} nativeTokenPolicyId
+     * @param {SidechainDomainAssetName} nativeTokenAssetName
+     * @param {SidechainDomainMainchainAddress} illiquidSupplyValidatorAddress
+     **/
+    setMainChainScripts: GenericTxCall<
+      (
+        nativeTokenPolicyId: SidechainDomainPolicyId,
+        nativeTokenAssetName: SidechainDomainAssetName,
+        illiquidSupplyValidatorAddress: SidechainDomainMainchainAddress,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NativeTokenManagement';
+          palletCall: {
+            name: 'SetMainChainScripts';
+            params: {
+              nativeTokenPolicyId: SidechainDomainPolicyId;
+              nativeTokenAssetName: SidechainDomainAssetName;
+              illiquidSupplyValidatorAddress: SidechainDomainMainchainAddress;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
+  };
+  /**
    * Pallet `Oracle`'s transaction calls
    **/
   oracle: {
     /**
      *
-     * @param {Array<[PalletOracleConfigNodeTradePair, bigint]>} prices
+     * @param {Array<[Charli3OracleCoreConfigNodeTradePair, bigint]>} prices
      **/
     storePrices: GenericTxCall<
-      (prices: Array<[PalletOracleConfigNodeTradePair, bigint]>) => ChainSubmittableExtrinsic<
+      (prices: Array<[Charli3OracleCoreConfigNodeTradePair, bigint]>) => ChainSubmittableExtrinsic<
         {
           pallet: 'Oracle';
           palletCall: {
             name: 'StorePrices';
             params: {
-              prices: Array<[PalletOracleConfigNodeTradePair, bigint]>;
+              prices: Array<[Charli3OracleCoreConfigNodeTradePair, bigint]>;
             };
           };
         },
@@ -1104,18 +1336,18 @@ export interface ChainTx<
 
     /**
      *
-     * @param {Array<[PalletOracleOracleMessage, SpRuntimeMultiSignature]>} signatures
+     * @param {Array<[Charli3OracleCorePalletOracleMessage, SpRuntimeMultiSignature]>} signatures
      **/
     storeSignatures: GenericTxCall<
       (
-        signatures: Array<[PalletOracleOracleMessage, SpRuntimeMultiSignature]>,
+        signatures: Array<[Charli3OracleCorePalletOracleMessage, SpRuntimeMultiSignature]>,
       ) => ChainSubmittableExtrinsic<
         {
           pallet: 'Oracle';
           palletCall: {
             name: 'StoreSignatures';
             params: {
-              signatures: Array<[PalletOracleOracleMessage, SpRuntimeMultiSignature]>;
+              signatures: Array<[Charli3OracleCorePalletOracleMessage, SpRuntimeMultiSignature]>;
             };
           };
         },
@@ -1125,21 +1357,24 @@ export interface ChainTx<
 
     /**
      *
-     * @param {PalletOracleConsensusConfiguration} consensusConfig
+     * @param {Charli3OracleCoreConfigNodeConsensusConfiguration} consensusConfig
      * @param {Array<[BytesLike, Array<number>]>} channelsToTradePairs
+     * @param {Charli3OracleCoreConfigNodeRewardConfiguration | undefined} rewardConfig
      **/
     sudoSetConfig: GenericTxCall<
       (
-        consensusConfig: PalletOracleConsensusConfiguration,
+        consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration,
         channelsToTradePairs: Array<[BytesLike, Array<number>]>,
+        rewardConfig: Charli3OracleCoreConfigNodeRewardConfiguration | undefined,
       ) => ChainSubmittableExtrinsic<
         {
           pallet: 'Oracle';
           palletCall: {
             name: 'SudoSetConfig';
             params: {
-              consensusConfig: PalletOracleConsensusConfiguration;
+              consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration;
               channelsToTradePairs: Array<[BytesLike, Array<number>]>;
+              rewardConfig: Charli3OracleCoreConfigNodeRewardConfiguration | undefined;
             };
           };
         },

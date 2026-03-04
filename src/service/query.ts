@@ -6,7 +6,7 @@ import type {
 } from '../charli3-substrate-runtime/index.js';
 import type { Bytes } from 'dedot/codecs';
 
-export { getCurrentConfig, useSubstrateClient };
+export { getCurrentConfig, getRewardConfig, useSubstrateClient };
 export type { OracleConfig, PalletOracleMessagesConfiguration };
 
 interface OracleConfig {
@@ -46,6 +46,17 @@ async function getCurrentConfig(
     },
     messages: channelsToTradePairs,
   };
+}
+
+async function getRewardConfig(
+  client: LegacyClient<CardanoSidechainApi>,
+): Promise<Charli3OracleCoreConfigNodeRewardConfiguration> {
+  const rewardPolicyId = await client.query.oracle.rewardPolicyId();
+  const rewardAssetName = await client.query.oracle.rewardAssetName();
+  if (rewardPolicyId === undefined || rewardAssetName === undefined) {
+    throw new Error("Couldn't load reward config");
+  }
+  return { rewardPolicyId, rewardAssetName };
 }
 
 async function useSubstrateClient(

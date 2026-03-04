@@ -4,7 +4,7 @@ import type { GenericSubstrateApi, GenericChainKnownTypes } from 'dedot/types';
 import type { MultiAddress } from 'dedot/codecs';
 import type {
   FrameSystemEventRecord,
-  Charli3SubstrateRuntimeRuntimeCall,
+  SidechainRuntimeRuntimeCall,
   SpRuntimeMultiSignature,
   FrameSystemExtensionsCheckNonZeroSender,
   FrameSystemExtensionsCheckSpecVersion,
@@ -27,7 +27,7 @@ export * from './types.js';
 interface ChainKnownTypes extends GenericChainKnownTypes {
   Address: MultiAddress;
   Signature: SpRuntimeMultiSignature;
-  RuntimeCall: Charli3SubstrateRuntimeRuntimeCall;
+  RuntimeCall: SidechainRuntimeRuntimeCall;
   Extra: [
     FrameSystemExtensionsCheckNonZeroSender,
     FrameSystemExtensionsCheckSpecVersion,
@@ -41,10 +41,10 @@ interface ChainKnownTypes extends GenericChainKnownTypes {
 }
 
 /**
- * @name: Charli3SubstrateRuntimeApi
- * @specVersion: 100
+ * @name: CardanoSidechainApi
+ * @specVersion: 140
  **/
-export interface Charli3SubstrateRuntimeApi extends GenericSubstrateApi {
+export interface CardanoSidechainApi extends GenericSubstrateApi {
   rpc: ChainJsonRpcApis;
   consts: ChainConsts;
   query: ChainStorage;
