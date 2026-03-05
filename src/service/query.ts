@@ -1,4 +1,4 @@
-import { DedotClient, WsProvider } from 'dedot';
+import { LegacyClient, WsProvider } from 'dedot';
 
 import type {
   CardanoSidechainApi,
@@ -17,9 +17,7 @@ interface OracleConfig {
 
 type PalletOracleMessagesConfiguration = [Bytes, number[]][];
 
-async function getCurrentConfig(
-  client: DedotClient<CardanoSidechainApi>,
-): Promise<OracleConfig> {
+async function getCurrentConfig(client: DedotClient<CardanoSidechainApi>): Promise<OracleConfig> {
   const minNodesForTrustedAggregation = await client.query.oracle.minNodesForTrustedAggregation();
   const feedAge = await client.query.oracle.feedAge();
   const outliersRange = await client.query.oracle.outliersRange();
