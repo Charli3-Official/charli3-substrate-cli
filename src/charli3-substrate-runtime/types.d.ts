@@ -1806,7 +1806,7 @@ export type PalletMultisigEvent =
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletSessionValidatorManagementEvent = null;
+export type PalletSessionValidatorManagementEvent = never;
 
 /**
  * The `Event` enum of this pallet

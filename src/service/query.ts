@@ -1,8 +1,9 @@
 import { DedotClient, WsProvider } from 'dedot';
 
 import type {
-  Charli3SubstrateRuntimeApi,
-  PalletOracleConsensusConfiguration,
+  CardanoSidechainApi,
+  Charli3OracleCoreConfigNodeConsensusConfiguration,
+  Charli3OracleCoreConfigNodeRewardConfiguration,
 } from '../charli3-substrate-runtime/index.js';
 import type { Bytes } from 'dedot/codecs';
 
@@ -10,14 +11,14 @@ export { getCurrentConfig, getRewardConfig, useSubstrateClient };
 export type { OracleConfig, PalletOracleMessagesConfiguration };
 
 interface OracleConfig {
-  consensus: PalletOracleConsensusConfiguration;
+  consensus: Charli3OracleCoreConfigNodeConsensusConfiguration;
   messages: PalletOracleMessagesConfiguration;
 }
 
 type PalletOracleMessagesConfiguration = [Bytes, number[]][];
 
 async function getCurrentConfig(
-  client: DedotClient<Charli3SubstrateRuntimeApi>,
+  client: DedotClient<CardanoSidechainApi>,
 ): Promise<OracleConfig> {
   const minNodesForTrustedAggregation = await client.query.oracle.minNodesForTrustedAggregation();
   const feedAge = await client.query.oracle.feedAge();
@@ -49,7 +50,7 @@ async function getCurrentConfig(
 }
 
 async function getRewardConfig(
-  client: LegacyClient<CardanoSidechainApi>,
+  client: DedotClient<CardanoSidechainApi>,
 ): Promise<Charli3OracleCoreConfigNodeRewardConfiguration> {
   const rewardPolicyId = await client.query.oracle.rewardPolicyId();
   const rewardAssetName = await client.query.oracle.rewardAssetName();
@@ -61,13 +62,13 @@ async function getRewardConfig(
 
 async function useSubstrateClient(
   wsJsonRpcUrl: string,
-  action: (client: DedotClient<Charli3SubstrateRuntimeApi>) => Promise<void>,
+  action: (client: DedotClient<CardanoSidechainApi>) => Promise<void>,
 ) {
   let provider;
   try {
     // Connect
     provider = new WsProvider(wsJsonRpcUrl);
-    const client = await DedotClient.new<Charli3SubstrateRuntimeApi>(provider);
+    const client = await DedotClient.new<CardanoSidechainApi>(provider);
     // Use
     await action(client);
   } finally {

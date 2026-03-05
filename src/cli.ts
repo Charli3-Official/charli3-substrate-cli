@@ -8,7 +8,7 @@ import { AccountId32, type Bytes } from 'dedot/codecs';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import type { DedotClient } from 'dedot';
 import type {
-  Charli3SubstrateRuntimeApi,
+  CardanoSidechainApi,
   PalletMultisigTimepoint,
 } from './charli3-substrate-runtime/index.js';
 import type { ChainSubmittableExtrinsic } from './charli3-substrate-runtime/tx.js';
@@ -25,7 +25,7 @@ program.name('charli3').description('Oracle platform CLI').version('1.0.0');
 
 // Generic multisig transaction executor
 interface MultisigTxParams {
-  client: DedotClient<Charli3SubstrateRuntimeApi>;
+  client: DedotClient<CardanoSidechainApi>;
   wallet: KeyringPair;
   multisigAddresses: string[];
   threshold: number;
@@ -69,7 +69,7 @@ async function executeMultisigTx({
 
   let txMultiHash: `0x${string}` | undefined = undefined;
 
-  const unsub = await txFinal.signAndSend(wallet, { tip: 0n }, async (result) => {
+  const unsub = await txFinal.signAndSend(wallet, { tip: 0n }, async (result: any) => {
     txCallback(result);
     for (const e of result.events) {
       if (e.event.pallet === 'Multisig' && e.event.palletEvent.name === 'NewMultisig') {
@@ -169,7 +169,7 @@ async function handleNodeOperation(
     console.log('Sudo address is ', sudoKey?.address() ?? 'Not found');
 
     const currentNodesRaw = await client.query.oracle.authorizedOracleNodes.entries();
-    const currentNodes = currentNodesRaw.map((account) => account[0]);
+    const currentNodes = currentNodesRaw.map((account: any) => account[0]);
     console.log('Current oracle nodes:', currentNodes);
 
     // Create the appropriate oracle call based on operation
@@ -199,10 +199,10 @@ async function handleNodeOperation(
 
     // Query and verify result
     const updatedNodesRaw = await client.query.oracle.authorizedOracleNodes.entries();
-    const updatedNodes = updatedNodesRaw.map((account) => account[0]);
+    const updatedNodes = updatedNodesRaw.map((account: any) => account[0]);
     console.log('Updated oracle nodes:', updatedNodes);
 
-    const nodeExists = updatedNodes.find((el) => el.eq(nodeKey));
+    const nodeExists = updatedNodes.find((el: any) => el.eq(nodeKey));
     if (operation === 'authorize' && nodeExists) {
       console.log('Oracle node added successfully!');
     } else if (operation === 'deauthorize' && !nodeExists) {
