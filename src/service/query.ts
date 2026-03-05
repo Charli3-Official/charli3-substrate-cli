@@ -1,4 +1,4 @@
-import { LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 
 import type {
   CardanoSidechainApi,

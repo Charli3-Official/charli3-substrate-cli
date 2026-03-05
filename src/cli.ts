@@ -6,7 +6,7 @@ import { calculateSafeWeight, txCallback, waitForTx } from './service/tx.js';
 import { loadCliConfig, loadMultisigConfig } from './service/config.js';
 import { AccountId32, type Bytes } from 'dedot/codecs';
 import type { KeyringPair } from '@polkadot/keyring/types';
-import type { LegacyClient } from 'dedot';
+import type { DedotClient } from 'dedot';
 import type {
   CardanoSidechainApi,
   PalletMultisigTimepoint,
