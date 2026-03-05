@@ -14,6 +14,7 @@ import type {
   SpRuntimeMultiSignature,
   Charli3OracleCorePalletAggregationState,
   Charli3OracleCoreConfigNodeConsensusConfiguration,
+  Charli3OracleCoreConfigNodeRewardConfiguration,
 } from './types.js';
 
 export interface ChainEvents extends GenericChainEvents {
@@ -603,6 +604,7 @@ export interface ChainEvents extends GenericChainEvents {
       {
         consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration;
         channelsToTradePairs: Array<[Bytes, Array<number>]>;
+        rewardConfig?: Charli3OracleCoreConfigNodeRewardConfiguration | undefined;
         block: number;
       }
     >;

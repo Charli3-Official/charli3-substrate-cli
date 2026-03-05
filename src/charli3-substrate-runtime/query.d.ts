@@ -748,6 +748,18 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      *
+     * @param {Callback<Bytes | undefined> =} callback
+     **/
+    rewardPolicyId: GenericStorageQuery<() => Bytes | undefined>;
+
+    /**
+     *
+     * @param {Callback<Bytes | undefined> =} callback
+     **/
+    rewardAssetName: GenericStorageQuery<() => Bytes | undefined>;
+
+    /**
+     *
      * @param {Callback<Array<Charli3OracleCoreConfigNodeTradePair> | undefined> =} callback
      **/
     tradePairs: GenericStorageQuery<() => Array<Charli3OracleCoreConfigNodeTradePair> | undefined>;

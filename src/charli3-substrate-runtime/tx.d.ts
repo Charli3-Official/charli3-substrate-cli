@@ -36,6 +36,7 @@ import type {
   Charli3OracleCoreConfigNodeTradePair,
   Charli3OracleCorePalletOracleMessage,
   Charli3OracleCoreConfigNodeConsensusConfiguration,
+  Charli3OracleCoreConfigNodeRewardConfiguration,
 } from './types.js';
 
 export type ChainSubmittableExtrinsic<
@@ -1358,11 +1359,13 @@ export interface ChainTx<
      *
      * @param {Charli3OracleCoreConfigNodeConsensusConfiguration} consensusConfig
      * @param {Array<[BytesLike, Array<number>]>} channelsToTradePairs
+     * @param {Charli3OracleCoreConfigNodeRewardConfiguration | undefined} rewardConfig
      **/
     sudoSetConfig: GenericTxCall<
       (
         consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration,
         channelsToTradePairs: Array<[BytesLike, Array<number>]>,
+        rewardConfig: Charli3OracleCoreConfigNodeRewardConfiguration | undefined,
       ) => ChainSubmittableExtrinsic<
         {
           pallet: 'Oracle';
@@ -1371,6 +1374,7 @@ export interface ChainTx<
             params: {
               consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration;
               channelsToTradePairs: Array<[BytesLike, Array<number>]>;
+              rewardConfig: Charli3OracleCoreConfigNodeRewardConfiguration | undefined;
             };
           };
         },

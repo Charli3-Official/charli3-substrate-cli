@@ -44,10 +44,16 @@ const PalletOracleMessagesConfigurationSchema = z.array(
   z.tuple([BytesSchema, z.array(z.number())]),
 );
 
+const PalletOracleRewardConfigurationSchema = z.object({
+  rewardPolicyId: BytesSchema,
+  rewardAssetName: BytesSchema,
+});
+
 const OracleConfigSchema = z.object({
   oracleConfig: z.object({
     consensus: PalletOracleConsensusConfigurationSchema,
     messages: PalletOracleMessagesConfigurationSchema,
+    reward: PalletOracleRewardConfigurationSchema.optional(),
   }),
 });
 

@@ -1,12 +1,13 @@
-import { LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 
 import type {
   CardanoSidechainApi,
   Charli3OracleCoreConfigNodeConsensusConfiguration,
+  Charli3OracleCoreConfigNodeRewardConfiguration,
 } from '../charli3-substrate-runtime/index.js';
 import type { Bytes } from 'dedot/codecs';
 
-export { getCurrentConfig, useSubstrateClient };
+export { getCurrentConfig, getRewardConfig, useSubstrateClient };
 export type { OracleConfig, PalletOracleMessagesConfiguration };
 
 interface OracleConfig {
@@ -16,7 +17,7 @@ interface OracleConfig {
 
 type PalletOracleMessagesConfiguration = [Bytes, number[]][];
 
-async function getCurrentConfig(client: LegacyClient<CardanoSidechainApi>): Promise<OracleConfig> {
+async function getCurrentConfig(client: DedotClient<CardanoSidechainApi>): Promise<OracleConfig> {
   const minNodesForTrustedAggregation = await client.query.oracle.minNodesForTrustedAggregation();
   const feedAge = await client.query.oracle.feedAge();
   const outliersRange = await client.query.oracle.outliersRange();
@@ -46,15 +47,26 @@ async function getCurrentConfig(client: LegacyClient<CardanoSidechainApi>): Prom
   };
 }
 
+async function getRewardConfig(
+  client: DedotClient<CardanoSidechainApi>,
+): Promise<Charli3OracleCoreConfigNodeRewardConfiguration> {
+  const rewardPolicyId = await client.query.oracle.rewardPolicyId();
+  const rewardAssetName = await client.query.oracle.rewardAssetName();
+  if (rewardPolicyId === undefined || rewardAssetName === undefined) {
+    throw new Error("Couldn't load reward config");
+  }
+  return { rewardPolicyId, rewardAssetName };
+}
+
 async function useSubstrateClient(
   wsJsonRpcUrl: string,
-  action: (client: LegacyClient<CardanoSidechainApi>) => Promise<void>,
+  action: (client: DedotClient<CardanoSidechainApi>) => Promise<void>,
 ) {
   let provider;
   try {
     // Connect
     provider = new WsProvider(wsJsonRpcUrl);
-    const client = await LegacyClient.new<CardanoSidechainApi>(provider);
+    const client = await DedotClient.new<CardanoSidechainApi>(provider);
     // Use
     await action(client);
   } finally {

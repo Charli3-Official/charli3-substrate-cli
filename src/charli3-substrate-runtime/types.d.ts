@@ -1264,6 +1264,7 @@ export type Charli3OracleCorePalletCall =
       params: {
         consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration;
         channelsToTradePairs: Array<[Bytes, Array<number>]>;
+        rewardConfig?: Charli3OracleCoreConfigNodeRewardConfiguration | undefined;
       };
     }
   | { name: 'SudoRegisterOracleNode'; params: { oracleAccount: AccountId32 } }
@@ -1288,6 +1289,7 @@ export type Charli3OracleCorePalletCallLike =
       params: {
         consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration;
         channelsToTradePairs: Array<[BytesLike, Array<number>]>;
+        rewardConfig?: Charli3OracleCoreConfigNodeRewardConfiguration | undefined;
       };
     }
   | {
@@ -1322,6 +1324,11 @@ export type Charli3OracleCoreConfigNodeConsensusConfiguration = {
   outliersRange: number;
   divergency: number;
   tradePairs: Array<Charli3OracleCoreConfigNodeTradePair>;
+};
+
+export type Charli3OracleCoreConfigNodeRewardConfiguration = {
+  rewardPolicyId: Bytes;
+  rewardAssetName: Bytes;
 };
 
 export type FrameSystemExtensionsCheckNonZeroSender = {};
@@ -1799,7 +1806,7 @@ export type PalletMultisigEvent =
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletSessionValidatorManagementEvent = { name: 'Unknown'; data?: any };
+export type PalletSessionValidatorManagementEvent = never;
 
 /**
  * The `Event` enum of this pallet
@@ -1870,6 +1877,7 @@ export type Charli3OracleCorePalletEvent =
       data: {
         consensusConfig: Charli3OracleCoreConfigNodeConsensusConfiguration;
         channelsToTradePairs: Array<[Bytes, Array<number>]>;
+        rewardConfig?: Charli3OracleCoreConfigNodeRewardConfiguration | undefined;
         block: number;
       };
     }
