@@ -326,6 +326,41 @@ export interface ChainErrors extends GenericChainErrors {
     UnauthorizedNode: GenericPalletError;
 
     /**
+     * Invalid state for operation
+     **/
+    InvalidNodeState: GenericPalletError;
+
+    /**
+     * Stake amount mismatch
+     **/
+    StakeMismatch: GenericPalletError;
+
+    /**
+     * Slash amount invalid
+     **/
+    SlashAmountInvalid: GenericPalletError;
+
+    /**
+     * Cannot vote for yourself
+     **/
+    CannotVoteForSelf: GenericPalletError;
+
+    /**
+     * No active slash to vote on
+     **/
+    NoActiveSlash: GenericPalletError;
+
+    /**
+     * Approved amount invalid
+     **/
+    ApprovedAmountInvalid: GenericPalletError;
+
+    /**
+     * Amount mismatch on withdrawal
+     **/
+    AmountMismatch: GenericPalletError;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;

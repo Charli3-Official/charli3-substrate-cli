@@ -15,6 +15,7 @@ import type {
   Charli3OracleCorePalletAggregationState,
   Charli3OracleCoreConfigNodeConsensusConfiguration,
   Charli3OracleCoreConfigNodeRewardConfiguration,
+  Charli3OracleCorePalletSlashVote,
 } from './types.js';
 
 export interface ChainEvents extends GenericChainEvents {
@@ -617,6 +618,134 @@ export interface ChainEvents extends GenericChainEvents {
       'Oracle',
       'RemovedOracleNode',
       { which: AccountId32; block: number }
+    >;
+
+    /**
+     * Staking certificate was issued and approved
+     **/
+    StakingCertificateIssued: GenericPalletEvent<
+      'Oracle',
+      'StakingCertificateIssued',
+      {
+        node: AccountId32;
+        amount: bigint;
+        expiresAt: number;
+        lockUntil: number;
+        when: number;
+      }
+    >;
+
+    /**
+     * Staking confirmed on Cardano
+     **/
+    StakingConfirmed: GenericPalletEvent<
+      'Oracle',
+      'StakingConfirmed',
+      {
+        node: AccountId32;
+        txHash: FixedBytes<64>;
+        stakeAmount: bigint;
+        when: number;
+      }
+    >;
+
+    /**
+     * Node requested retire
+     **/
+    RetireRequested: GenericPalletEvent<
+      'Oracle',
+      'RetireRequested',
+      { node: AccountId32; when: number }
+    >;
+
+    /**
+     * Retire certificate issued
+     **/
+    RetireCertificateIssued: GenericPalletEvent<
+      'Oracle',
+      'RetireCertificateIssued',
+      { node: AccountId32; lockUntil: number; when: number }
+    >;
+
+    /**
+     * Slash request initiated
+     **/
+    SlashRequested: GenericPalletEvent<
+      'Oracle',
+      'SlashRequested',
+      {
+        node: AccountId32;
+        slashAmount: bigint;
+        initiatedBy: AccountId32;
+        when: number;
+      }
+    >;
+
+    /**
+     * Slash vote cast
+     **/
+    SlashVoteCast: GenericPalletEvent<
+      'Oracle',
+      'SlashVoteCast',
+      {
+        node: AccountId32;
+        voter: AccountId32;
+        vote: Charli3OracleCorePalletSlashVote;
+        when: number;
+      }
+    >;
+
+    /**
+     * Slash approved by voting
+     **/
+    SlashApproved: GenericPalletEvent<
+      'Oracle',
+      'SlashApproved',
+      {
+        node: AccountId32;
+        slashAmount: bigint;
+        approveCount: number;
+        denyCount: number;
+        when: number;
+      }
+    >;
+
+    /**
+     * Slash rejected by voting
+     **/
+    SlashRejected: GenericPalletEvent<
+      'Oracle',
+      'SlashRejected',
+      {
+        node: AccountId32;
+        approveCount: number;
+        denyCount: number;
+        when: number;
+      }
+    >;
+
+    /**
+     * Withdrawal certificate issued
+     **/
+    WithdrawalCertificateIssued: GenericPalletEvent<
+      'Oracle',
+      'WithdrawalCertificateIssued',
+      { node: AccountId32; approvedAmount: bigint; when: number }
+    >;
+
+    /**
+     * Withdrawal confirmed on Cardano
+     **/
+    WithdrawalConfirmed: GenericPalletEvent<
+      'Oracle',
+      'WithdrawalConfirmed',
+      {
+        node: AccountId32;
+        txHash: FixedBytes<64>;
+        releasedAmount: bigint;
+        penaltyAmount: bigint;
+        when: number;
+      }
     >;
 
     /**

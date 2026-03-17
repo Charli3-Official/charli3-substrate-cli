@@ -7,6 +7,7 @@ import { loadCliConfig, loadMultisigConfig } from './service/config.js';
 import { AccountId32, type Bytes } from 'dedot/codecs';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import type { DedotClient } from 'dedot';
+import { createStakingCommand } from './commands/stakingCommands.js';
 import type {
   CardanoSidechainApi,
   PalletMultisigTimepoint,
@@ -33,7 +34,7 @@ interface MultisigTxParams {
   when?: PalletMultisigTimepoint | undefined;
 }
 
-async function executeMultisigTx({
+export async function executeMultisigTx({
   client,
   wallet,
   multisigAddresses,
@@ -387,6 +388,10 @@ addWalletAndConfigOptions(
     opts.tx,
   );
 });
+
+// ==================== STAKING COMMANDS ====================
+
+program.addCommand(createStakingCommand());
 
 // Balance check command
 program

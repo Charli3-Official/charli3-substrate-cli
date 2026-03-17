@@ -42,6 +42,8 @@ import type {
   SpCoreCryptoKeyTypeId,
   SpNativeTokenManagementMainChainScripts,
   Charli3OracleCoreConfigNodeTradePair,
+  Charli3OracleCorePalletNodeStakingInfo,
+  Charli3OracleCorePalletSlashVote,
   Charli3OracleCorePalletAggregationState,
 } from './types.js';
 
@@ -773,10 +775,32 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<[] | undefined> =} callback
+     * @param {Callback<Charli3OracleCorePalletNodeStakingInfo | undefined> =} callback
      **/
     authorizedOracleNodes: GenericStorageQuery<
-      (arg: AccountId32Like) => [] | undefined,
+      (arg: AccountId32Like) => Charli3OracleCorePalletNodeStakingInfo | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Slash votes: (target_node, voting_node) → SlashVote
+     *
+     * @param {[AccountId32Like, AccountId32Like]} arg
+     * @param {Callback<Charli3OracleCorePalletSlashVote | undefined> =} callback
+     **/
+    slashVotes: GenericStorageQuery<
+      (arg: [AccountId32Like, AccountId32Like]) => Charli3OracleCorePalletSlashVote | undefined,
+      [AccountId32, AccountId32]
+    >;
+
+    /**
+     * Slash proposals: node_account → (slash_amount, initiated_by, block_number)
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<[bigint, AccountId32, number] | undefined> =} callback
+     **/
+    slashProposals: GenericStorageQuery<
+      (arg: AccountId32Like) => [bigint, AccountId32, number] | undefined,
       AccountId32
     >;
 

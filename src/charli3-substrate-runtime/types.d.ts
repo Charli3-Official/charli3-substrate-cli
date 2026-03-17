@@ -1268,9 +1268,52 @@ export type Charli3OracleCorePalletCall =
       };
     }
   | { name: 'SudoRegisterOracleNode'; params: { oracleAccount: AccountId32 } }
+  | { name: 'SudoDeregisterOracleNode'; params: { oracleAccount: AccountId32 } }
   | {
-      name: 'SudoDeregisterOracleNode';
-      params: { oracleAccount: AccountId32 };
+      name: 'GenerateStakingCertificate';
+      params: {
+        nodeAccount: AccountId32;
+        stakeAmount: bigint;
+        lockUntilBlock: number;
+        expiresAtBlock: number;
+      };
+    }
+  | { name: 'ConfirmCardanoStake'; params: { txHash: FixedBytes<64> } }
+  | { name: 'RequestRetire' }
+  | {
+      name: 'GenerateRetireCertificate';
+      params: {
+        nodeAccount: AccountId32;
+        lockUntilBlock: number;
+        expiresAtBlock: number;
+      };
+    }
+  | {
+      name: 'RequestSlash';
+      params: { nodeAccount: AccountId32; slashAmount: bigint };
+    }
+  | {
+      name: 'VoteSlash';
+      params: {
+        nodeAccount: AccountId32;
+        vote: Charli3OracleCorePalletSlashVote;
+      };
+    }
+  | {
+      name: 'GenerateWithdrawalCertificate';
+      params: {
+        nodeAccount: AccountId32;
+        approvedAmount: bigint;
+        expiresAtBlock: number;
+      };
+    }
+  | {
+      name: 'ConfirmCardanoWithdrawal';
+      params: {
+        txHash: FixedBytes<64>;
+        releasedAmount: bigint;
+        penaltyAmount: bigint;
+      };
     };
 
 export type Charli3OracleCorePalletCallLike =
@@ -1299,6 +1342,52 @@ export type Charli3OracleCorePalletCallLike =
   | {
       name: 'SudoDeregisterOracleNode';
       params: { oracleAccount: AccountId32Like };
+    }
+  | {
+      name: 'GenerateStakingCertificate';
+      params: {
+        nodeAccount: AccountId32Like;
+        stakeAmount: bigint;
+        lockUntilBlock: number;
+        expiresAtBlock: number;
+      };
+    }
+  | { name: 'ConfirmCardanoStake'; params: { txHash: FixedBytes<64> } }
+  | { name: 'RequestRetire' }
+  | {
+      name: 'GenerateRetireCertificate';
+      params: {
+        nodeAccount: AccountId32Like;
+        lockUntilBlock: number;
+        expiresAtBlock: number;
+      };
+    }
+  | {
+      name: 'RequestSlash';
+      params: { nodeAccount: AccountId32Like; slashAmount: bigint };
+    }
+  | {
+      name: 'VoteSlash';
+      params: {
+        nodeAccount: AccountId32Like;
+        vote: Charli3OracleCorePalletSlashVote;
+      };
+    }
+  | {
+      name: 'GenerateWithdrawalCertificate';
+      params: {
+        nodeAccount: AccountId32Like;
+        approvedAmount: bigint;
+        expiresAtBlock: number;
+      };
+    }
+  | {
+      name: 'ConfirmCardanoWithdrawal';
+      params: {
+        txHash: FixedBytes<64>;
+        releasedAmount: bigint;
+        penaltyAmount: bigint;
+      };
     };
 
 export type Charli3OracleCoreConfigNodeTradePair = {
@@ -1311,6 +1400,7 @@ export type Charli3OracleCorePalletOracleMessage = {
   pricesAndAge: Array<[bigint, number] | undefined>;
   timestamp: bigint;
   rewards: Array<[FixedBytes<32>, number]>;
+  rewardAsset?: [Bytes, Bytes] | undefined;
 };
 
 export type SpRuntimeMultiSignature =
@@ -1330,6 +1420,8 @@ export type Charli3OracleCoreConfigNodeRewardConfiguration = {
   rewardPolicyId: Bytes;
   rewardAssetName: Bytes;
 };
+
+export type Charli3OracleCorePalletSlashVote = 'Approve' | 'Deny';
 
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
@@ -1806,7 +1898,7 @@ export type PalletMultisigEvent =
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletSessionValidatorManagementEvent = never;
+export type PalletSessionValidatorManagementEvent = null;
 
 /**
  * The `Event` enum of this pallet
@@ -1882,7 +1974,112 @@ export type Charli3OracleCorePalletEvent =
       };
     }
   | { name: 'AddedOracleNode'; data: { which: AccountId32; block: number } }
-  | { name: 'RemovedOracleNode'; data: { which: AccountId32; block: number } };
+  | { name: 'RemovedOracleNode'; data: { which: AccountId32; block: number } }
+  /**
+   * Staking certificate was issued and approved
+   **/
+  | {
+      name: 'StakingCertificateIssued';
+      data: {
+        node: AccountId32;
+        amount: bigint;
+        expiresAt: number;
+        lockUntil: number;
+        when: number;
+      };
+    }
+  /**
+   * Staking confirmed on Cardano
+   **/
+  | {
+      name: 'StakingConfirmed';
+      data: {
+        node: AccountId32;
+        txHash: FixedBytes<64>;
+        stakeAmount: bigint;
+        when: number;
+      };
+    }
+  /**
+   * Node requested retire
+   **/
+  | { name: 'RetireRequested'; data: { node: AccountId32; when: number } }
+  /**
+   * Retire certificate issued
+   **/
+  | {
+      name: 'RetireCertificateIssued';
+      data: { node: AccountId32; lockUntil: number; when: number };
+    }
+  /**
+   * Slash request initiated
+   **/
+  | {
+      name: 'SlashRequested';
+      data: {
+        node: AccountId32;
+        slashAmount: bigint;
+        initiatedBy: AccountId32;
+        when: number;
+      };
+    }
+  /**
+   * Slash vote cast
+   **/
+  | {
+      name: 'SlashVoteCast';
+      data: {
+        node: AccountId32;
+        voter: AccountId32;
+        vote: Charli3OracleCorePalletSlashVote;
+        when: number;
+      };
+    }
+  /**
+   * Slash approved by voting
+   **/
+  | {
+      name: 'SlashApproved';
+      data: {
+        node: AccountId32;
+        slashAmount: bigint;
+        approveCount: number;
+        denyCount: number;
+        when: number;
+      };
+    }
+  /**
+   * Slash rejected by voting
+   **/
+  | {
+      name: 'SlashRejected';
+      data: {
+        node: AccountId32;
+        approveCount: number;
+        denyCount: number;
+        when: number;
+      };
+    }
+  /**
+   * Withdrawal certificate issued
+   **/
+  | {
+      name: 'WithdrawalCertificateIssued';
+      data: { node: AccountId32; approvedAmount: bigint; when: number };
+    }
+  /**
+   * Withdrawal confirmed on Cardano
+   **/
+  | {
+      name: 'WithdrawalConfirmed';
+      data: {
+        node: AccountId32;
+        txHash: FixedBytes<64>;
+        releasedAmount: bigint;
+        penaltyAmount: bigint;
+        when: number;
+      };
+    };
 
 export type Charli3OracleCorePalletAggregationState = {
   pricesAgeAndRewards: Array<[bigint, number, Array<FixedBytes<32>>] | undefined>;
@@ -2317,6 +2514,21 @@ export type SpNativeTokenManagementMainChainScripts = {
   illiquidSupplyValidatorAddress: SidechainDomainMainchainAddress;
 };
 
+export type Charli3OracleCorePalletNodeStakingInfo = {
+  stakeAmount: bigint;
+  state: Charli3OracleCorePalletOracleNodeStakingState;
+  stakeActivatedAt: number;
+};
+
+export type Charli3OracleCorePalletOracleNodeStakingState =
+  | 'Inactive'
+  | 'StakingApproved'
+  | 'ActiveStake'
+  | 'RetireStake'
+  | 'SlashVoting'
+  | 'SlashApproved'
+  | 'WithdrawApproved';
+
 /**
  * The `Error` enum of this pallet.
  **/
@@ -2324,7 +2536,35 @@ export type Charli3OracleCorePalletError =
   /**
    * Oracle node is not authorized to submit data
    **/
-  'UnauthorizedNode';
+  | 'UnauthorizedNode'
+  /**
+   * Invalid state for operation
+   **/
+  | 'InvalidNodeState'
+  /**
+   * Stake amount mismatch
+   **/
+  | 'StakeMismatch'
+  /**
+   * Slash amount invalid
+   **/
+  | 'SlashAmountInvalid'
+  /**
+   * Cannot vote for yourself
+   **/
+  | 'CannotVoteForSelf'
+  /**
+   * No active slash to vote on
+   **/
+  | 'NoActiveSlash'
+  /**
+   * Approved amount invalid
+   **/
+  | 'ApprovedAmountInvalid'
+  /**
+   * Amount mismatch on withdrawal
+   **/
+  | 'AmountMismatch';
 
 export type SpRuntimeExtrinsicInclusionMode = 'AllExtrinsics' | 'OnlyInherents';
 
