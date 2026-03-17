@@ -361,6 +361,16 @@ export interface ChainErrors extends GenericChainErrors {
     AmountMismatch: GenericPalletError;
 
     /**
+     * Signing admin submitted different params than the existing proposal
+     **/
+    ProposalMismatch: GenericPalletError;
+
+    /**
+     * This account has already signed this proposal
+     **/
+    AlreadySigned: GenericPalletError;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;

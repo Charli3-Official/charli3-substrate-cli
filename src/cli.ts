@@ -19,10 +19,13 @@ import {
   addWalletAndConfigOptions,
   selectWallet,
 } from './service/cli.js';
+import { createStakingCommand } from './commands/stakingCommands.js';
 
 const program = new Command();
 
 program.name('charli3').description('Oracle platform CLI').version('1.0.0');
+
+export { executeMultisigTx };
 
 // Generic multisig transaction executor
 interface MultisigTxParams {
@@ -507,5 +510,7 @@ program
     console.log(`    AccountId::from_str("${hexMulti}").unwrap(),`);
     console.log('].to_vec();');
   });
+
+program.addCommand(createStakingCommand());
 
 program.parseAsync(process.argv);

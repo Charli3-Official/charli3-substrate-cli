@@ -41,6 +41,7 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    "noEmitOnError": false,
     "forceConsistentCasingInFileNames": true,
 
     "esModuleInterop": true,

@@ -9,15 +9,9 @@ import {
   handleGenerateWithdrawalCertificate,
   handleConfirmCardanoWithdrawal,
 } from '../service/staking.js';
-import {
-  addWalletAndConfigOptions,
-  addSigningOptions,
-  addNodeOption,
-  selectWallet,
-} from '../service/cli.js';
-import { loadMultisigConfig } from '../service/config.js';
+import { addWalletAndConfigOptions, addNodeOption, selectWallet } from '../service/cli.js';
 
-export function createStakingCommand(): Command {
+export function createStakingCommand() {
   const stakingCommand = new Command('staking').description('Staking operations');
 
   // ==================== STAKE ====================
@@ -26,63 +20,58 @@ export function createStakingCommand(): Command {
     addNodeOption(
       stakingCommand
         .command('start-approve-stake')
-        .description('Propose staking certificate (multisig start)')
+        .description('Propose staking certificate — admin signs StakingMessage with ed25519 key')
         .requiredOption('--amount <amount>', 'Stake amount in lovelace')
         .requiredOption('--lock-until <block>', 'Block height until node can retire')
-        .requiredOption('--cardano-pkh <pkh>', 'Node Cardano public key hash (0x prefixed hex)'),
+        .requiredOption('--pkh-node-admin <pkh>', 'Node Cardano PKH for admin key — added to OracleSettings.nodes_admin (0x prefixed hex)')
+        .requiredOption('--pkh-node-aggregation <pkh>', 'Node Cardano PKH for oracle key — added to OracleSettings.nodes_aggregation (0x prefixed hex)'),
       'Node SS58 address',
     ),
   ).action(async (opts) => {
     const amount = BigInt(opts.amount);
     const lockUntil = parseInt(opts.lockUntil);
     console.log(
-      `📋 Proposing stake approval for ${opts.node} — amount: ${amount}, lock-until: ${lockUntil}, pkh: ${opts.cardanoPkh}`,
+      `Proposing stake approval for ${opts.node} — amount: ${amount}, lock-until: ${lockUntil}`,
     );
     await useSubstrateClient(opts.substrateRpc, async (client) => {
-      const { multisig } = loadMultisigConfig(opts.config);
       const wallet = await selectWallet(opts.wallet);
       await handleGenerateStakingCertificate(
         client,
-        multisig.addresses,
-        multisig.threshold,
         wallet,
         opts.node,
         amount,
         lockUntil,
-        opts.cardanoPkh,
+        opts.pkhNodeAdmin,
+        opts.pkhNodeAggregation,
       );
     });
   });
 
   addWalletAndConfigOptions(
-    addSigningOptions(
-      addNodeOption(
-        stakingCommand
-          .command('sign-approve-stake')
-          .description('Sign staking certificate (multisig sign)')
-          .requiredOption('--amount <amount>', 'Same amount as start-approve-stake')
-          .requiredOption('--lock-until <block>', 'Same lock-until as start-approve-stake')
-          .requiredOption('--cardano-pkh <pkh>', 'Same cardano-pkh as start-approve-stake'),
-        'Node SS58 address',
-      ),
+    addNodeOption(
+      stakingCommand
+        .command('sign-approve-stake')
+        .description('Sign staking certificate — admin signs StakingMessage with ed25519 key')
+        .requiredOption('--amount <amount>', 'Same amount as start-approve-stake')
+        .requiredOption('--lock-until <block>', 'Same lock-until as start-approve-stake')
+        .requiredOption('--pkh-node-admin <pkh>', 'Same pkh-node-admin as start-approve-stake')
+        .requiredOption('--pkh-node-aggregation <pkh>', 'Same pkh-node-aggregation as start-approve-stake'),
+      'Node SS58 address',
     ),
   ).action(async (opts) => {
     const amount = BigInt(opts.amount);
     const lockUntil = parseInt(opts.lockUntil);
-    console.log(`📋 Signing stake approval for ${opts.node}, tx: ${opts.tx}`);
+    console.log(`Signing stake approval for ${opts.node}`);
     await useSubstrateClient(opts.substrateRpc, async (client) => {
-      const { multisig } = loadMultisigConfig(opts.config);
       const wallet = await selectWallet(opts.wallet);
       await handleGenerateStakingCertificate(
         client,
-        multisig.addresses,
-        multisig.threshold,
         wallet,
         opts.node,
         amount,
         lockUntil,
-        opts.cardanoPkh,
-        opts.tx,
+        opts.pkhNodeAdmin,
+        opts.pkhNodeAggregation,
       );
     });
   });
@@ -93,7 +82,7 @@ export function createStakingCommand(): Command {
       .description('Confirm Cardano stake tx on partnerchain (single sig, node only)')
       .requiredOption('--tx-hash <hash>', 'Cardano transaction hash'),
   ).action(async (opts) => {
-    console.log(`📋 Confirming Cardano stake: ${opts.txHash}`);
+    console.log(`Confirming Cardano stake: ${opts.txHash}`);
     await useSubstrateClient(opts.substrateRpc, async (client) => {
       const wallet = await selectWallet(opts.wallet);
       await handleConfirmCardanoStake(client, wallet, opts.txHash);
@@ -107,7 +96,7 @@ export function createStakingCommand(): Command {
       .command('request-retire')
       .description('Node signals intent to withdraw (single sig, node only)'),
   ).action(async (opts) => {
-    console.log('📋 Requesting retire');
+    console.log('Requesting retire');
     await useSubstrateClient(opts.substrateRpc, async (client) => {
       const wallet = await selectWallet(opts.wallet);
       await handleRequestRetire(client, wallet);
@@ -118,7 +107,9 @@ export function createStakingCommand(): Command {
     addNodeOption(
       stakingCommand
         .command('start-approve-withdraw')
-        .description('Propose withdrawal certificate (multisig start)')
+        .description(
+          'Propose withdrawal certificate — admin signs WithdrawalMessage with ed25519 key',
+        )
         .requiredOption(
           '--approved-amount <amount>',
           'Approved amount — less than stake if penalty applies',
@@ -127,49 +118,30 @@ export function createStakingCommand(): Command {
     ),
   ).action(async (opts) => {
     const approvedAmount = BigInt(opts.approvedAmount);
-    console.log(`📋 Proposing withdraw approval for ${opts.node} — approved: ${approvedAmount}`);
+    console.log(`Proposing withdraw approval for ${opts.node} — approved: ${approvedAmount}`);
     await useSubstrateClient(opts.substrateRpc, async (client) => {
-      const { multisig } = loadMultisigConfig(opts.config);
       const wallet = await selectWallet(opts.wallet);
-      await handleGenerateWithdrawalCertificate(
-        client,
-        multisig.addresses,
-        multisig.threshold,
-        wallet,
-        opts.node,
-        approvedAmount,
-      );
+      await handleGenerateWithdrawalCertificate(client, wallet, opts.node, approvedAmount);
     });
   });
 
   addWalletAndConfigOptions(
-    addSigningOptions(
-      addNodeOption(
-        stakingCommand
-          .command('sign-approve-withdraw')
-          .description('Sign withdrawal certificate (multisig sign)')
-          .requiredOption(
-            '--approved-amount <amount>',
-            'Same approved-amount as start-approve-withdraw',
-          ),
-        'Node SS58 address',
-      ),
+    addNodeOption(
+      stakingCommand
+        .command('sign-approve-withdraw')
+        .description('Sign withdrawal certificate — admin signs WithdrawalMessage with ed25519 key')
+        .requiredOption(
+          '--approved-amount <amount>',
+          'Same approved-amount as start-approve-withdraw',
+        ),
+      'Node SS58 address',
     ),
   ).action(async (opts) => {
     const approvedAmount = BigInt(opts.approvedAmount);
-    console.log(`📋 Signing withdraw approval for ${opts.node}, tx: ${opts.tx}`);
+    console.log(`Signing withdraw approval for ${opts.node}`);
     await useSubstrateClient(opts.substrateRpc, async (client) => {
-      const { multisig } = loadMultisigConfig(opts.config);
       const wallet = await selectWallet(opts.wallet);
-      await handleGenerateWithdrawalCertificate(
-        client,
-        multisig.addresses,
-        multisig.threshold,
-        wallet,
-        opts.node,
-        approvedAmount,
-        opts.tx,
-      );
+      await handleGenerateWithdrawalCertificate(client, wallet, opts.node, approvedAmount);
     });
   });
 
@@ -190,7 +162,7 @@ export function createStakingCommand(): Command {
     const released = BigInt(opts.released);
     const penalty = BigInt(opts.penalty);
     console.log(
-      `📋 Confirming withdrawal for ${opts.node} — released: ${released}, penalty: ${penalty}`,
+      `Confirming withdrawal for ${opts.node} — released: ${released}, penalty: ${penalty}`,
     );
     await useSubstrateClient(opts.substrateRpc, async (client) => {
       const wallet = await selectWallet(opts.wallet);
@@ -210,7 +182,7 @@ export function createStakingCommand(): Command {
     ),
   ).action(async (opts) => {
     const slashAmount = BigInt(opts.slashAmount);
-    console.log(`📋 Requesting slash of ${slashAmount} from ${opts.node}`);
+    console.log(`Requesting slash of ${slashAmount} from ${opts.node}`);
     await useSubstrateClient(opts.substrateRpc, async (client) => {
       const wallet = await selectWallet(opts.wallet);
       await handleRequestSlash(client, wallet, opts.node, slashAmount);
@@ -226,8 +198,8 @@ export function createStakingCommand(): Command {
       'Node SS58 address being slashed',
     ),
   ).action(async (opts) => {
-    const vote = opts.vote.toLowerCase() === 'approve' ? 'Approve' : 'Deny';
-    console.log(`📋 Voting ${vote} on slash for ${opts.node}`);
+    const vote = opts.vote.toLowerCase() === 'approve' ? ('Approve' as const) : ('Deny' as const);
+    console.log(`Voting ${vote} on slash for ${opts.node}`);
     await useSubstrateClient(opts.substrateRpc, async (client) => {
       const wallet = await selectWallet(opts.wallet);
       await handleVoteSlash(client, wallet, opts.node, vote);

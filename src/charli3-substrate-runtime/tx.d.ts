@@ -1422,14 +1422,20 @@ export interface ChainTx<
      * @param {AccountId32Like} nodeAccount
      * @param {bigint} stakeAmount
      * @param {number} lockUntilBlock
-     * @param {number} expiresAtBlock
+     * @param {BytesLike} cardanoPkhAdmin
+     * @param {BytesLike} cardanoPkhAggregation
+     * @param {FixedBytes<32>} adminPubkey
+     * @param {FixedBytes<64>} adminSig
      **/
     generateStakingCertificate: GenericTxCall<
       (
         nodeAccount: AccountId32Like,
         stakeAmount: bigint,
         lockUntilBlock: number,
-        expiresAtBlock: number,
+        cardanoPkhAdmin: BytesLike,
+        cardanoPkhAggregation: BytesLike,
+        adminPubkey: FixedBytes<32>,
+        adminSig: FixedBytes<64>,
       ) => ChainSubmittableExtrinsic<
         {
           pallet: 'Oracle';
@@ -1439,7 +1445,10 @@ export interface ChainTx<
               nodeAccount: AccountId32Like;
               stakeAmount: bigint;
               lockUntilBlock: number;
-              expiresAtBlock: number;
+              cardanoPkhAdmin: BytesLike;
+              cardanoPkhAggregation: BytesLike;
+              adminPubkey: FixedBytes<32>;
+              adminSig: FixedBytes<64>;
             };
           };
         },
@@ -1449,15 +1458,15 @@ export interface ChainTx<
 
     /**
      *
-     * @param {FixedBytes<64>} txHash
+     * @param {FixedBytes<32>} txHash
      **/
     confirmCardanoStake: GenericTxCall<
-      (txHash: FixedBytes<64>) => ChainSubmittableExtrinsic<
+      (txHash: FixedBytes<32>) => ChainSubmittableExtrinsic<
         {
           pallet: 'Oracle';
           palletCall: {
             name: 'ConfirmCardanoStake';
-            params: { txHash: FixedBytes<64> };
+            params: { txHash: FixedBytes<32> };
           };
         },
         ChainKnownTypes
@@ -1555,13 +1564,15 @@ export interface ChainTx<
      *
      * @param {AccountId32Like} nodeAccount
      * @param {bigint} approvedAmount
-     * @param {number} expiresAtBlock
+     * @param {FixedBytes<32>} adminPubkey
+     * @param {FixedBytes<64>} adminSig
      **/
     generateWithdrawalCertificate: GenericTxCall<
       (
         nodeAccount: AccountId32Like,
         approvedAmount: bigint,
-        expiresAtBlock: number,
+        adminPubkey: FixedBytes<32>,
+        adminSig: FixedBytes<64>,
       ) => ChainSubmittableExtrinsic<
         {
           pallet: 'Oracle';
@@ -1570,7 +1581,8 @@ export interface ChainTx<
             params: {
               nodeAccount: AccountId32Like;
               approvedAmount: bigint;
-              expiresAtBlock: number;
+              adminPubkey: FixedBytes<32>;
+              adminSig: FixedBytes<64>;
             };
           };
         },
@@ -1580,13 +1592,13 @@ export interface ChainTx<
 
     /**
      *
-     * @param {FixedBytes<64>} txHash
+     * @param {FixedBytes<32>} txHash
      * @param {bigint} releasedAmount
      * @param {bigint} penaltyAmount
      **/
     confirmCardanoWithdrawal: GenericTxCall<
       (
-        txHash: FixedBytes<64>,
+        txHash: FixedBytes<32>,
         releasedAmount: bigint,
         penaltyAmount: bigint,
       ) => ChainSubmittableExtrinsic<
@@ -1595,7 +1607,7 @@ export interface ChainTx<
           palletCall: {
             name: 'ConfirmCardanoWithdrawal';
             params: {
-              txHash: FixedBytes<64>;
+              txHash: FixedBytes<32>;
               releasedAmount: bigint;
               penaltyAmount: bigint;
             };

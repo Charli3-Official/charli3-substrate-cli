@@ -621,7 +621,8 @@ export interface ChainEvents extends GenericChainEvents {
     >;
 
     /**
-     * Staking certificate was issued and approved
+     * Staking certificate was issued and approved — carries threshold admin signatures inline.
+     * Bridge-offchain reads this single event to build the Cardano place-staking redeemer.
      **/
     StakingCertificateIssued: GenericPalletEvent<
       'Oracle',
@@ -629,8 +630,22 @@ export interface ChainEvents extends GenericChainEvents {
       {
         node: AccountId32;
         amount: bigint;
-        expiresAt: number;
         lockUntil: number;
+
+        /**
+         * Admin key PKH — bridge-offchain adds to OracleSettings.nodes_admin
+         **/
+        cardanoPkhAdmin: Bytes;
+
+        /**
+         * Aggregation key PKH — bridge-offchain adds to OracleSettings.nodes_aggregation
+         **/
+        cardanoPkhAggregation: Bytes;
+
+        /**
+         * Admin ed25519 signatures: Vec<(pubkey_32, sig_64)>
+         **/
+        sigs: Array<[FixedBytes<32>, FixedBytes<64>]>;
         when: number;
       }
     >;
@@ -643,7 +658,7 @@ export interface ChainEvents extends GenericChainEvents {
       'StakingConfirmed',
       {
         node: AccountId32;
-        txHash: FixedBytes<64>;
+        txHash: FixedBytes<32>;
         stakeAmount: bigint;
         when: number;
       }
@@ -725,12 +740,40 @@ export interface ChainEvents extends GenericChainEvents {
     >;
 
     /**
-     * Withdrawal certificate issued
+     * Withdrawal certificate issued — carries threshold admin signatures inline.
+     * Bridge-offchain reads this single event to build the Cardano withdraw redeemer.
      **/
     WithdrawalCertificateIssued: GenericPalletEvent<
       'Oracle',
       'WithdrawalCertificateIssued',
-      { node: AccountId32; approvedAmount: bigint; when: number }
+      {
+        node: AccountId32;
+        approvedAmount: bigint;
+
+        /**
+         * Admin ed25519 signatures: Vec<(pubkey_32, sig_64)>
+         **/
+        sigs: Array<[FixedBytes<32>, FixedBytes<64>]>;
+        when: number;
+      }
+    >;
+
+    /**
+     * An admin signed a staking approval — waiting for more signatures.
+     **/
+    StakingApprovalSigned: GenericPalletEvent<
+      'Oracle',
+      'StakingApprovalSigned',
+      { node: AccountId32; signer: AccountId32; when: number }
+    >;
+
+    /**
+     * An admin signed a withdrawal approval — waiting for more signatures.
+     **/
+    WithdrawalApprovalSigned: GenericPalletEvent<
+      'Oracle',
+      'WithdrawalApprovalSigned',
+      { node: AccountId32; signer: AccountId32; when: number }
     >;
 
     /**
@@ -741,7 +784,7 @@ export interface ChainEvents extends GenericChainEvents {
       'WithdrawalConfirmed',
       {
         node: AccountId32;
-        txHash: FixedBytes<64>;
+        txHash: FixedBytes<32>;
         releasedAmount: bigint;
         penaltyAmount: bigint;
         when: number;

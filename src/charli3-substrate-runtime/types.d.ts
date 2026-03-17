@@ -1275,10 +1275,13 @@ export type Charli3OracleCorePalletCall =
         nodeAccount: AccountId32;
         stakeAmount: bigint;
         lockUntilBlock: number;
-        expiresAtBlock: number;
+        cardanoPkhAdmin: Bytes;
+        cardanoPkhAggregation: Bytes;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
       };
     }
-  | { name: 'ConfirmCardanoStake'; params: { txHash: FixedBytes<64> } }
+  | { name: 'ConfirmCardanoStake'; params: { txHash: FixedBytes<32> } }
   | { name: 'RequestRetire' }
   | {
       name: 'GenerateRetireCertificate';
@@ -1304,13 +1307,14 @@ export type Charli3OracleCorePalletCall =
       params: {
         nodeAccount: AccountId32;
         approvedAmount: bigint;
-        expiresAtBlock: number;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
       };
     }
   | {
       name: 'ConfirmCardanoWithdrawal';
       params: {
-        txHash: FixedBytes<64>;
+        txHash: FixedBytes<32>;
         releasedAmount: bigint;
         penaltyAmount: bigint;
       };
@@ -1349,10 +1353,13 @@ export type Charli3OracleCorePalletCallLike =
         nodeAccount: AccountId32Like;
         stakeAmount: bigint;
         lockUntilBlock: number;
-        expiresAtBlock: number;
+        cardanoPkhAdmin: BytesLike;
+        cardanoPkhAggregation: BytesLike;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
       };
     }
-  | { name: 'ConfirmCardanoStake'; params: { txHash: FixedBytes<64> } }
+  | { name: 'ConfirmCardanoStake'; params: { txHash: FixedBytes<32> } }
   | { name: 'RequestRetire' }
   | {
       name: 'GenerateRetireCertificate';
@@ -1378,13 +1385,14 @@ export type Charli3OracleCorePalletCallLike =
       params: {
         nodeAccount: AccountId32Like;
         approvedAmount: bigint;
-        expiresAtBlock: number;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
       };
     }
   | {
       name: 'ConfirmCardanoWithdrawal';
       params: {
-        txHash: FixedBytes<64>;
+        txHash: FixedBytes<32>;
         releasedAmount: bigint;
         penaltyAmount: bigint;
       };
@@ -1976,15 +1984,30 @@ export type Charli3OracleCorePalletEvent =
   | { name: 'AddedOracleNode'; data: { which: AccountId32; block: number } }
   | { name: 'RemovedOracleNode'; data: { which: AccountId32; block: number } }
   /**
-   * Staking certificate was issued and approved
+   * Staking certificate was issued and approved — carries threshold admin signatures inline.
+   * Bridge-offchain reads this single event to build the Cardano place-staking redeemer.
    **/
   | {
       name: 'StakingCertificateIssued';
       data: {
         node: AccountId32;
         amount: bigint;
-        expiresAt: number;
         lockUntil: number;
+
+        /**
+         * Admin key PKH — bridge-offchain adds to OracleSettings.nodes_admin
+         **/
+        cardanoPkhAdmin: Bytes;
+
+        /**
+         * Aggregation key PKH — bridge-offchain adds to OracleSettings.nodes_aggregation
+         **/
+        cardanoPkhAggregation: Bytes;
+
+        /**
+         * Admin ed25519 signatures: Vec<(pubkey_32, sig_64)>
+         **/
+        sigs: Array<[FixedBytes<32>, FixedBytes<64>]>;
         when: number;
       };
     }
@@ -1995,7 +2018,7 @@ export type Charli3OracleCorePalletEvent =
       name: 'StakingConfirmed';
       data: {
         node: AccountId32;
-        txHash: FixedBytes<64>;
+        txHash: FixedBytes<32>;
         stakeAmount: bigint;
         when: number;
       };
@@ -2061,11 +2084,35 @@ export type Charli3OracleCorePalletEvent =
       };
     }
   /**
-   * Withdrawal certificate issued
+   * Withdrawal certificate issued — carries threshold admin signatures inline.
+   * Bridge-offchain reads this single event to build the Cardano withdraw redeemer.
    **/
   | {
       name: 'WithdrawalCertificateIssued';
-      data: { node: AccountId32; approvedAmount: bigint; when: number };
+      data: {
+        node: AccountId32;
+        approvedAmount: bigint;
+
+        /**
+         * Admin ed25519 signatures: Vec<(pubkey_32, sig_64)>
+         **/
+        sigs: Array<[FixedBytes<32>, FixedBytes<64>]>;
+        when: number;
+      };
+    }
+  /**
+   * An admin signed a staking approval — waiting for more signatures.
+   **/
+  | {
+      name: 'StakingApprovalSigned';
+      data: { node: AccountId32; signer: AccountId32; when: number };
+    }
+  /**
+   * An admin signed a withdrawal approval — waiting for more signatures.
+   **/
+  | {
+      name: 'WithdrawalApprovalSigned';
+      data: { node: AccountId32; signer: AccountId32; when: number };
     }
   /**
    * Withdrawal confirmed on Cardano
@@ -2074,7 +2121,7 @@ export type Charli3OracleCorePalletEvent =
       name: 'WithdrawalConfirmed';
       data: {
         node: AccountId32;
-        txHash: FixedBytes<64>;
+        txHash: FixedBytes<32>;
         releasedAmount: bigint;
         penaltyAmount: bigint;
         when: number;
@@ -2518,6 +2565,8 @@ export type Charli3OracleCorePalletNodeStakingInfo = {
   stakeAmount: bigint;
   state: Charli3OracleCorePalletOracleNodeStakingState;
   stakeActivatedAt: number;
+  cardanoPkhAdmin: Bytes;
+  cardanoPkhAggregation: Bytes;
 };
 
 export type Charli3OracleCorePalletOracleNodeStakingState =
@@ -2564,7 +2613,15 @@ export type Charli3OracleCorePalletError =
   /**
    * Amount mismatch on withdrawal
    **/
-  | 'AmountMismatch';
+  | 'AmountMismatch'
+  /**
+   * Signing admin submitted different params than the existing proposal
+   **/
+  | 'ProposalMismatch'
+  /**
+   * This account has already signed this proposal
+   **/
+  | 'AlreadySigned';
 
 export type SpRuntimeExtrinsicInclusionMode = 'AllExtrinsics' | 'OnlyInherents';
 
