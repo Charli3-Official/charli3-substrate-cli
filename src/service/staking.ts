@@ -283,7 +283,12 @@ export async function handleGenerateWithdrawalCertificate(
   // Look up cardano_pkh from chain to build the WithdrawalMessage
   const nodeInfo = await client.query.oracle.authorizedOracleNodes(nodeKey);
   if (!nodeInfo) throw new Error(`Node ${nodeAccount} not found in AuthorizedOracleNodes`);
-  const pkhAdminBytes = nodeInfo.cardanoPkhAdmin as unknown as Uint8Array;
+  const rawPkh = nodeInfo.cardanoPkhAdmin as unknown as any;
+  const pkhAdminBytes = typeof rawPkh === 'string'
+    ? hexToU8a(rawPkh.startsWith('0x') ? rawPkh : `0x${rawPkh}`)
+    : rawPkh?.raw
+    ? new Uint8Array(rawPkh.raw)
+    : new Uint8Array(rawPkh);
 
   // Build WithdrawalMessage CBOR and hash it (uses admin PKH to identify Stake UTxO)
   const cbor = encodeWithdrawalMessage(pkhAdminBytes, approvedAmount);
