@@ -371,6 +371,11 @@ export interface ChainErrors extends GenericChainErrors {
     AlreadySigned: GenericPalletError;
 
     /**
+     * Admin signature is invalid
+     **/
+    InvalidAdminSignature: GenericPalletError;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;

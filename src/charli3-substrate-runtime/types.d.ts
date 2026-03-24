@@ -1300,13 +1300,14 @@ export type Charli3OracleCorePalletCall =
       params: {
         nodeAccount: AccountId32;
         vote: Charli3OracleCorePalletSlashVote;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
       };
     }
   | {
       name: 'GenerateWithdrawalCertificate';
       params: {
         nodeAccount: AccountId32;
-        approvedAmount: bigint;
         adminPubkey: FixedBytes<32>;
         adminSig: FixedBytes<64>;
       };
@@ -1378,13 +1379,14 @@ export type Charli3OracleCorePalletCallLike =
       params: {
         nodeAccount: AccountId32Like;
         vote: Charli3OracleCorePalletSlashVote;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
       };
     }
   | {
       name: 'GenerateWithdrawalCertificate';
       params: {
         nodeAccount: AccountId32Like;
-        approvedAmount: bigint;
         adminPubkey: FixedBytes<32>;
         adminSig: FixedBytes<64>;
       };
@@ -2621,7 +2623,11 @@ export type Charli3OracleCorePalletError =
   /**
    * This account has already signed this proposal
    **/
-  | 'AlreadySigned';
+  | 'AlreadySigned'
+  /**
+   * Admin signature is invalid
+   **/
+  | 'InvalidAdminSignature';
 
 export type SpRuntimeExtrinsicInclusionMode = 'AllExtrinsics' | 'OnlyInherents';
 

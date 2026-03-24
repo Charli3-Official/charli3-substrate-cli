@@ -1540,11 +1540,15 @@ export interface ChainTx<
      *
      * @param {AccountId32Like} nodeAccount
      * @param {Charli3OracleCorePalletSlashVote} vote
+     * @param {FixedBytes<32>} adminPubkey
+     * @param {FixedBytes<64>} adminSig
      **/
     voteSlash: GenericTxCall<
       (
         nodeAccount: AccountId32Like,
         vote: Charli3OracleCorePalletSlashVote,
+        adminPubkey: FixedBytes<32>,
+        adminSig: FixedBytes<64>,
       ) => ChainSubmittableExtrinsic<
         {
           pallet: 'Oracle';
@@ -1553,6 +1557,8 @@ export interface ChainTx<
             params: {
               nodeAccount: AccountId32Like;
               vote: Charli3OracleCorePalletSlashVote;
+              adminPubkey: FixedBytes<32>;
+              adminSig: FixedBytes<64>;
             };
           };
         },
@@ -1563,14 +1569,12 @@ export interface ChainTx<
     /**
      *
      * @param {AccountId32Like} nodeAccount
-     * @param {bigint} approvedAmount
      * @param {FixedBytes<32>} adminPubkey
      * @param {FixedBytes<64>} adminSig
      **/
     generateWithdrawalCertificate: GenericTxCall<
       (
         nodeAccount: AccountId32Like,
-        approvedAmount: bigint,
         adminPubkey: FixedBytes<32>,
         adminSig: FixedBytes<64>,
       ) => ChainSubmittableExtrinsic<
@@ -1580,7 +1584,6 @@ export interface ChainTx<
             name: 'GenerateWithdrawalCertificate';
             params: {
               nodeAccount: AccountId32Like;
-              approvedAmount: bigint;
               adminPubkey: FixedBytes<32>;
               adminSig: FixedBytes<64>;
             };

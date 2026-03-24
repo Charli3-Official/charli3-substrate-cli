@@ -194,6 +194,24 @@ export async function handleRequestSlash(
   await waitForTx(client);
 }
 
+export function encodeSlashVoteMessage(
+  cardanoPkhAdminBytes: Uint8Array,
+  vote: 'Approve' | 'Deny',
+): Uint8Array {
+  // tag(121) + begin_indefinite_array + bytes(cardano_pkh_admin) + uint(vote) + end
+  const tag = new Uint8Array([0xd8, 0x79]);
+  const beginArray = new Uint8Array([0x9f]);
+  const end = new Uint8Array([0xff]);
+  const voteIndex = vote === 'Approve' ? 0 : 1;
+  return concat(
+    tag,
+    beginArray,
+    encodeCborBytes(cardanoPkhAdminBytes),
+    encodeCborUint(voteIndex),
+    end,
+  );
+}
+
 export async function handleVoteSlash(
   client: DedotClient<CardanoSidechainApi>,
   wallet: KeyringPair,
@@ -201,7 +219,31 @@ export async function handleVoteSlash(
   vote: 'Approve' | 'Deny',
 ): Promise<void> {
   const nodeKey = new AccountId32(nodeAccount);
-  const extrinsic = client.tx.oracle.voteSlash(nodeKey, vote);
+
+  // Look up target node's cardano PKH from chain to build the SlashVoteMessage
+  const nodeInfo = await client.query.oracle.authorizedOracleNodes(nodeKey);
+  if (!nodeInfo) throw new Error(`Node ${nodeAccount} not found in AuthorizedOracleNodes`);
+  const rawPkh = nodeInfo.cardanoPkhAdmin as unknown as any;
+  const pkhAdminBytes =
+    typeof rawPkh === 'string'
+      ? hexToU8a(rawPkh.startsWith('0x') ? rawPkh : `0x${rawPkh}`)
+      : rawPkh?.raw
+        ? new Uint8Array(rawPkh.raw)
+        : new Uint8Array(rawPkh);
+
+  const cbor = encodeSlashVoteMessage(pkhAdminBytes, vote);
+  const messageHash = hashCbor(cbor);
+  const { pubkey, sig } = signWithAdminKey(wallet, messageHash);
+
+  console.log(`Signing SlashVoteMessage CBOR hash: ${u8aToHex(messageHash)}`);
+  console.log(`Admin pubkey: ${u8aToHex(pubkey)}`);
+
+  const extrinsic = client.tx.oracle.voteSlash(
+    nodeKey,
+    vote,
+    u8aToHex(pubkey) as FixedBytes<32>,
+    u8aToHex(sig) as FixedBytes<64>,
+  );
   await extrinsic.signAndSend(wallet, txCallback);
   await waitForTx(client);
 }
@@ -241,8 +283,12 @@ export async function handleGenerateStakingCertificate(
 ): Promise<void> {
   const nodeKey = new AccountId32(nodeAccount);
 
-  const pkhAdminBytes = hexToU8a(cardanoPkhAdmin.startsWith('0x') ? cardanoPkhAdmin : `0x${cardanoPkhAdmin}`);
-  const pkhAggregationBytes = hexToU8a(cardanoPkhAggregation.startsWith('0x') ? cardanoPkhAggregation : `0x${cardanoPkhAggregation}`);
+  const pkhAdminBytes = hexToU8a(
+    cardanoPkhAdmin.startsWith('0x') ? cardanoPkhAdmin : `0x${cardanoPkhAdmin}`,
+  );
+  const pkhAggregationBytes = hexToU8a(
+    cardanoPkhAggregation.startsWith('0x') ? cardanoPkhAggregation : `0x${cardanoPkhAggregation}`,
+  );
 
   // Build StakingMessage CBOR and hash it
   const cbor = encodeStakingMessage(pkhAdminBytes, pkhAggregationBytes, amount, lockUntilBlock);
@@ -276,25 +322,41 @@ export async function handleGenerateWithdrawalCertificate(
   client: DedotClient<CardanoSidechainApi>,
   wallet: KeyringPair,
   nodeAccount: string,
-  approvedAmount: bigint,
 ): Promise<void> {
   const nodeKey = new AccountId32(nodeAccount);
 
-  // Look up cardano_pkh from chain to build the WithdrawalMessage
+  // Look up node info from chain
   const nodeInfo = await client.query.oracle.authorizedOracleNodes(nodeKey);
   if (!nodeInfo) throw new Error(`Node ${nodeAccount} not found in AuthorizedOracleNodes`);
-  const rawPkh = nodeInfo.cardanoPkhAdmin as unknown as any;
-  const pkhAdminBytes = typeof rawPkh === 'string'
-    ? hexToU8a(rawPkh.startsWith('0x') ? rawPkh : `0x${rawPkh}`)
-    : rawPkh?.raw
-    ? new Uint8Array(rawPkh.raw)
-    : new Uint8Array(rawPkh);
 
-  // Build WithdrawalMessage CBOR and hash it (uses admin PKH to identify Stake UTxO)
+  const rawPkh = nodeInfo.cardanoPkhAdmin as unknown as any;
+  const pkhAdminBytes =
+    typeof rawPkh === 'string'
+      ? hexToU8a(rawPkh.startsWith('0x') ? rawPkh : `0x${rawPkh}`)
+      : rawPkh?.raw
+        ? new Uint8Array(rawPkh.raw)
+        : new Uint8Array(rawPkh);
+
+  // Derive approved_amount from chain state — same logic as the pallet.
+  // SlashApproved: approved = stake - slash_amount.
+  // RetireStake: approved = full stake, no penalty.
+  const stakeAmount = BigInt((nodeInfo.stakeAmount as unknown as any).toString());
+  const state = (nodeInfo.state as unknown as any).type ?? nodeInfo.state;
+  let approvedAmount: bigint;
+  if (state === 'SlashApproved') {
+    const slashProposal = await client.query.oracle.slashProposals(nodeKey);
+    if (!slashProposal) throw new Error(`No slash proposal found for ${nodeAccount}`);
+    const slashAmount = BigInt((slashProposal[0] as unknown as any).toString());
+    approvedAmount = stakeAmount - slashAmount;
+  } else {
+    approvedAmount = stakeAmount;
+  }
+
+  console.log(`Node state: ${state}, stake: ${stakeAmount}, approved: ${approvedAmount}`);
+
+  // Build WithdrawalMessage CBOR and hash it — format unchanged
   const cbor = encodeWithdrawalMessage(pkhAdminBytes, approvedAmount);
   const messageHash = hashCbor(cbor);
-
-  // Sign with admin ed25519 key
   const { pubkey, sig } = signWithAdminKey(wallet, messageHash);
 
   console.log(`Signing WithdrawalMessage CBOR hash: ${u8aToHex(messageHash)}`);
@@ -302,7 +364,6 @@ export async function handleGenerateWithdrawalCertificate(
 
   const extrinsic = client.tx.oracle.generateWithdrawalCertificate(
     nodeKey,
-    approvedAmount,
     u8aToHex(pubkey) as FixedBytes<32>,
     u8aToHex(sig) as FixedBytes<64>,
   );

@@ -23,8 +23,14 @@ export function createStakingCommand() {
         .description('Propose staking certificate — admin signs StakingMessage with ed25519 key')
         .requiredOption('--amount <amount>', 'Stake amount in lovelace')
         .requiredOption('--lock-until <block>', 'Block height until node can retire')
-        .requiredOption('--pkh-node-admin <pkh>', 'Node Cardano PKH for admin key — added to OracleSettings.nodes_admin (0x prefixed hex)')
-        .requiredOption('--pkh-node-aggregation <pkh>', 'Node Cardano PKH for oracle key — added to OracleSettings.nodes_aggregation (0x prefixed hex)'),
+        .requiredOption(
+          '--pkh-node-admin <pkh>',
+          'Node Cardano PKH for admin key — added to OracleSettings.nodes_admin (0x prefixed hex)',
+        )
+        .requiredOption(
+          '--pkh-node-aggregation <pkh>',
+          'Node Cardano PKH for oracle key — added to OracleSettings.nodes_aggregation (0x prefixed hex)',
+        ),
       'Node SS58 address',
     ),
   ).action(async (opts) => {
@@ -55,7 +61,10 @@ export function createStakingCommand() {
         .requiredOption('--amount <amount>', 'Same amount as start-approve-stake')
         .requiredOption('--lock-until <block>', 'Same lock-until as start-approve-stake')
         .requiredOption('--pkh-node-admin <pkh>', 'Same pkh-node-admin as start-approve-stake')
-        .requiredOption('--pkh-node-aggregation <pkh>', 'Same pkh-node-aggregation as start-approve-stake'),
+        .requiredOption(
+          '--pkh-node-aggregation <pkh>',
+          'Same pkh-node-aggregation as start-approve-stake',
+        ),
       'Node SS58 address',
     ),
   ).action(async (opts) => {
@@ -108,20 +117,15 @@ export function createStakingCommand() {
       stakingCommand
         .command('start-approve-withdraw')
         .description(
-          'Propose withdrawal certificate — admin signs WithdrawalMessage with ed25519 key',
-        )
-        .requiredOption(
-          '--approved-amount <amount>',
-          'Approved amount — less than stake if penalty applies',
+          'Propose withdrawal certificate — approved amount derived from chain state (slash vote result)',
         ),
       'Node SS58 address',
     ),
   ).action(async (opts) => {
-    const approvedAmount = BigInt(opts.approvedAmount);
-    console.log(`Proposing withdraw approval for ${opts.node} — approved: ${approvedAmount}`);
+    console.log(`Proposing withdraw approval for ${opts.node}`);
     await useSubstrateClient(opts.substrateRpc, async (client) => {
       const wallet = await selectWallet(opts.wallet);
-      await handleGenerateWithdrawalCertificate(client, wallet, opts.node, approvedAmount);
+      await handleGenerateWithdrawalCertificate(client, wallet, opts.node);
     });
   });
 
@@ -129,19 +133,14 @@ export function createStakingCommand() {
     addNodeOption(
       stakingCommand
         .command('sign-approve-withdraw')
-        .description('Sign withdrawal certificate — admin signs WithdrawalMessage with ed25519 key')
-        .requiredOption(
-          '--approved-amount <amount>',
-          'Same approved-amount as start-approve-withdraw',
-        ),
+        .description('Sign withdrawal certificate — approved amount derived from chain state'),
       'Node SS58 address',
     ),
   ).action(async (opts) => {
-    const approvedAmount = BigInt(opts.approvedAmount);
     console.log(`Signing withdraw approval for ${opts.node}`);
     await useSubstrateClient(opts.substrateRpc, async (client) => {
       const wallet = await selectWallet(opts.wallet);
-      await handleGenerateWithdrawalCertificate(client, wallet, opts.node, approvedAmount);
+      await handleGenerateWithdrawalCertificate(client, wallet, opts.node);
     });
   });
 
