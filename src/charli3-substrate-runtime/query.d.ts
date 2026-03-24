@@ -42,6 +42,8 @@ import type {
   SpCoreCryptoKeyTypeId,
   SpNativeTokenManagementMainChainScripts,
   Charli3OracleCoreConfigNodeTradePair,
+  Charli3OracleCorePalletNodeStakingInfo,
+  Charli3OracleCorePalletSlashVote,
   Charli3OracleCorePalletAggregationState,
 } from './types.js';
 
@@ -773,10 +775,110 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<[] | undefined> =} callback
+     * @param {Callback<Charli3OracleCorePalletNodeStakingInfo | undefined> =} callback
      **/
     authorizedOracleNodes: GenericStorageQuery<
-      (arg: AccountId32Like) => [] | undefined,
+      (arg: AccountId32Like) => Charli3OracleCorePalletNodeStakingInfo | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Pending staking approval: node → (stake_amount, lock_until, cardano_pkh_admin, cardano_pkh_aggregation).
+     * Created by first admin signer, cleared when threshold is met.
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<[bigint, number, Bytes, Bytes] | undefined> =} callback
+     **/
+    stakingApprovalInfo: GenericStorageQuery<
+      (arg: AccountId32Like) => [bigint, number, Bytes, Bytes] | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Staking approval signatures: (node, signer) → (admin_ed25519_pubkey, admin_sig).
+     * Admins sign StakingMessage CBOR hash with their admin ed25519 key.
+     * Cleared when threshold is met and certificate is emitted.
+     *
+     * @param {[AccountId32Like, AccountId32Like]} arg
+     * @param {Callback<[FixedBytes<32>, FixedBytes<64>] | undefined> =} callback
+     **/
+    stakingApprovalSigs: GenericStorageQuery<
+      (arg: [AccountId32Like, AccountId32Like]) => [FixedBytes<32>, FixedBytes<64>] | undefined,
+      [AccountId32, AccountId32]
+    >;
+
+    /**
+     * Pending withdrawal approval: node → approved_amount.
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<bigint | undefined> =} callback
+     **/
+    withdrawalApprovalInfo: GenericStorageQuery<
+      (arg: AccountId32Like) => bigint | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Withdrawal approval signatures: (node, signer) → (admin_ed25519_pubkey, admin_sig).
+     * Admins sign WithdrawalMessage CBOR hash with their admin ed25519 key.
+     *
+     * @param {[AccountId32Like, AccountId32Like]} arg
+     * @param {Callback<[FixedBytes<32>, FixedBytes<64>] | undefined> =} callback
+     **/
+    withdrawalApprovalSigs: GenericStorageQuery<
+      (arg: [AccountId32Like, AccountId32Like]) => [FixedBytes<32>, FixedBytes<64>] | undefined,
+      [AccountId32, AccountId32]
+    >;
+
+    /**
+     * Issued staking certificate — written when threshold is met, queryable by bridge-offchain.
+     * node → (stake_amount, lock_until, cardano_pkh_admin, cardano_pkh_aggregation, admin_sigs)
+     * Bridge-offchain uses cardano_pkh_admin + cardano_pkh_aggregation to update OracleSettings.
+     * Analogous to SignatureStorage for oracle messages.
+     * Cleared when node calls confirm_cardano_stake.
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<[bigint, number, Bytes, Bytes, Array<[FixedBytes<32>, FixedBytes<64>]>] | undefined> =} callback
+     **/
+    issuedStakingCerts: GenericStorageQuery<
+      (
+        arg: AccountId32Like,
+      ) => [bigint, number, Bytes, Bytes, Array<[FixedBytes<32>, FixedBytes<64>]>] | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Issued withdrawal certificate — written when threshold is met, queryable by bridge-offchain.
+     * node → (approved_amount, admin_sigs)
+     * Cleared when node calls confirm_cardano_withdrawal.
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<[bigint, Array<[FixedBytes<32>, FixedBytes<64>]>] | undefined> =} callback
+     **/
+    issuedWithdrawalCerts: GenericStorageQuery<
+      (arg: AccountId32Like) => [bigint, Array<[FixedBytes<32>, FixedBytes<64>]>] | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Slash votes: (target_node, voting_node) → SlashVote
+     *
+     * @param {[AccountId32Like, AccountId32Like]} arg
+     * @param {Callback<Charli3OracleCorePalletSlashVote | undefined> =} callback
+     **/
+    slashVotes: GenericStorageQuery<
+      (arg: [AccountId32Like, AccountId32Like]) => Charli3OracleCorePalletSlashVote | undefined,
+      [AccountId32, AccountId32]
+    >;
+
+    /**
+     * Slash proposals: node_account → (slash_amount, initiated_by, block_number)
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<[bigint, AccountId32, number] | undefined> =} callback
+     **/
+    slashProposals: GenericStorageQuery<
+      (arg: AccountId32Like) => [bigint, AccountId32, number] | undefined,
       AccountId32
     >;
 

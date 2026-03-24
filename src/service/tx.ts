@@ -26,7 +26,8 @@ function txCallback<TxResult extends ISubmittableResult = ISubmittableResult>(
   }
 }
 
-async function waitForTx(client: DedotClient<CardanoSidechainApi>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function waitForTx(client: DedotClient<any>) {
   const waitTime = Number(client.consts.aura.slotDuration) + 1_000;
   console.log(`Waiting for ${waitTime} milliseconds (block production time + 1 sec)...`);
   await new Promise((resolve) => setTimeout(resolve, waitTime));

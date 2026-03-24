@@ -1268,9 +1268,57 @@ export type Charli3OracleCorePalletCall =
       };
     }
   | { name: 'SudoRegisterOracleNode'; params: { oracleAccount: AccountId32 } }
+  | { name: 'SudoDeregisterOracleNode'; params: { oracleAccount: AccountId32 } }
   | {
-      name: 'SudoDeregisterOracleNode';
-      params: { oracleAccount: AccountId32 };
+      name: 'GenerateStakingCertificate';
+      params: {
+        nodeAccount: AccountId32;
+        stakeAmount: bigint;
+        lockUntilBlock: number;
+        cardanoPkhAdmin: Bytes;
+        cardanoPkhAggregation: Bytes;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
+      };
+    }
+  | { name: 'ConfirmCardanoStake'; params: { txHash: FixedBytes<32> } }
+  | { name: 'RequestRetire' }
+  | {
+      name: 'GenerateRetireCertificate';
+      params: {
+        nodeAccount: AccountId32;
+        lockUntilBlock: number;
+        expiresAtBlock: number;
+      };
+    }
+  | {
+      name: 'RequestSlash';
+      params: { nodeAccount: AccountId32; slashAmount: bigint };
+    }
+  | {
+      name: 'VoteSlash';
+      params: {
+        nodeAccount: AccountId32;
+        vote: Charli3OracleCorePalletSlashVote;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
+      };
+    }
+  | {
+      name: 'GenerateWithdrawalCertificate';
+      params: {
+        nodeAccount: AccountId32;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
+      };
+    }
+  | {
+      name: 'ConfirmCardanoWithdrawal';
+      params: {
+        txHash: FixedBytes<32>;
+        releasedAmount: bigint;
+        penaltyAmount: bigint;
+      };
     };
 
 export type Charli3OracleCorePalletCallLike =
@@ -1299,6 +1347,57 @@ export type Charli3OracleCorePalletCallLike =
   | {
       name: 'SudoDeregisterOracleNode';
       params: { oracleAccount: AccountId32Like };
+    }
+  | {
+      name: 'GenerateStakingCertificate';
+      params: {
+        nodeAccount: AccountId32Like;
+        stakeAmount: bigint;
+        lockUntilBlock: number;
+        cardanoPkhAdmin: BytesLike;
+        cardanoPkhAggregation: BytesLike;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
+      };
+    }
+  | { name: 'ConfirmCardanoStake'; params: { txHash: FixedBytes<32> } }
+  | { name: 'RequestRetire' }
+  | {
+      name: 'GenerateRetireCertificate';
+      params: {
+        nodeAccount: AccountId32Like;
+        lockUntilBlock: number;
+        expiresAtBlock: number;
+      };
+    }
+  | {
+      name: 'RequestSlash';
+      params: { nodeAccount: AccountId32Like; slashAmount: bigint };
+    }
+  | {
+      name: 'VoteSlash';
+      params: {
+        nodeAccount: AccountId32Like;
+        vote: Charli3OracleCorePalletSlashVote;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
+      };
+    }
+  | {
+      name: 'GenerateWithdrawalCertificate';
+      params: {
+        nodeAccount: AccountId32Like;
+        adminPubkey: FixedBytes<32>;
+        adminSig: FixedBytes<64>;
+      };
+    }
+  | {
+      name: 'ConfirmCardanoWithdrawal';
+      params: {
+        txHash: FixedBytes<32>;
+        releasedAmount: bigint;
+        penaltyAmount: bigint;
+      };
     };
 
 export type Charli3OracleCoreConfigNodeTradePair = {
@@ -1311,6 +1410,7 @@ export type Charli3OracleCorePalletOracleMessage = {
   pricesAndAge: Array<[bigint, number] | undefined>;
   timestamp: bigint;
   rewards: Array<[FixedBytes<32>, number]>;
+  rewardAsset?: [Bytes, Bytes] | undefined;
 };
 
 export type SpRuntimeMultiSignature =
@@ -1330,6 +1430,8 @@ export type Charli3OracleCoreConfigNodeRewardConfiguration = {
   rewardPolicyId: Bytes;
   rewardAssetName: Bytes;
 };
+
+export type Charli3OracleCorePalletSlashVote = 'Approve' | 'Deny';
 
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
@@ -1882,7 +1984,151 @@ export type Charli3OracleCorePalletEvent =
       };
     }
   | { name: 'AddedOracleNode'; data: { which: AccountId32; block: number } }
-  | { name: 'RemovedOracleNode'; data: { which: AccountId32; block: number } };
+  | { name: 'RemovedOracleNode'; data: { which: AccountId32; block: number } }
+  /**
+   * Staking certificate was issued and approved — carries threshold admin signatures inline.
+   * Bridge-offchain reads this single event to build the Cardano place-staking redeemer.
+   **/
+  | {
+      name: 'StakingCertificateIssued';
+      data: {
+        node: AccountId32;
+        amount: bigint;
+        lockUntil: number;
+
+        /**
+         * Admin key PKH — bridge-offchain adds to OracleSettings.nodes_admin
+         **/
+        cardanoPkhAdmin: Bytes;
+
+        /**
+         * Aggregation key PKH — bridge-offchain adds to OracleSettings.nodes_aggregation
+         **/
+        cardanoPkhAggregation: Bytes;
+
+        /**
+         * Admin ed25519 signatures: Vec<(pubkey_32, sig_64)>
+         **/
+        sigs: Array<[FixedBytes<32>, FixedBytes<64>]>;
+        when: number;
+      };
+    }
+  /**
+   * Staking confirmed on Cardano
+   **/
+  | {
+      name: 'StakingConfirmed';
+      data: {
+        node: AccountId32;
+        txHash: FixedBytes<32>;
+        stakeAmount: bigint;
+        when: number;
+      };
+    }
+  /**
+   * Node requested retire
+   **/
+  | { name: 'RetireRequested'; data: { node: AccountId32; when: number } }
+  /**
+   * Retire certificate issued
+   **/
+  | {
+      name: 'RetireCertificateIssued';
+      data: { node: AccountId32; lockUntil: number; when: number };
+    }
+  /**
+   * Slash request initiated
+   **/
+  | {
+      name: 'SlashRequested';
+      data: {
+        node: AccountId32;
+        slashAmount: bigint;
+        initiatedBy: AccountId32;
+        when: number;
+      };
+    }
+  /**
+   * Slash vote cast
+   **/
+  | {
+      name: 'SlashVoteCast';
+      data: {
+        node: AccountId32;
+        voter: AccountId32;
+        vote: Charli3OracleCorePalletSlashVote;
+        when: number;
+      };
+    }
+  /**
+   * Slash approved by voting
+   **/
+  | {
+      name: 'SlashApproved';
+      data: {
+        node: AccountId32;
+        slashAmount: bigint;
+        approveCount: number;
+        denyCount: number;
+        when: number;
+      };
+    }
+  /**
+   * Slash rejected by voting
+   **/
+  | {
+      name: 'SlashRejected';
+      data: {
+        node: AccountId32;
+        approveCount: number;
+        denyCount: number;
+        when: number;
+      };
+    }
+  /**
+   * Withdrawal certificate issued — carries threshold admin signatures inline.
+   * Bridge-offchain reads this single event to build the Cardano withdraw redeemer.
+   **/
+  | {
+      name: 'WithdrawalCertificateIssued';
+      data: {
+        node: AccountId32;
+        approvedAmount: bigint;
+
+        /**
+         * Admin ed25519 signatures: Vec<(pubkey_32, sig_64)>
+         **/
+        sigs: Array<[FixedBytes<32>, FixedBytes<64>]>;
+        when: number;
+      };
+    }
+  /**
+   * An admin signed a staking approval — waiting for more signatures.
+   **/
+  | {
+      name: 'StakingApprovalSigned';
+      data: { node: AccountId32; signer: AccountId32; when: number };
+    }
+  /**
+   * An admin signed a withdrawal approval — waiting for more signatures.
+   **/
+  | {
+      name: 'WithdrawalApprovalSigned';
+      data: { node: AccountId32; signer: AccountId32; when: number };
+    }
+  /**
+   * Withdrawal confirmed on Cardano
+   **/
+  | {
+      name: 'WithdrawalConfirmed';
+      data: {
+        node: AccountId32;
+        txHash: FixedBytes<32>;
+        releasedAmount: bigint;
+        penaltyAmount: bigint;
+        when: number;
+      };
+    };
 
 export type Charli3OracleCorePalletAggregationState = {
   pricesAgeAndRewards: Array<[bigint, number, Array<FixedBytes<32>>] | undefined>;
@@ -2317,6 +2563,23 @@ export type SpNativeTokenManagementMainChainScripts = {
   illiquidSupplyValidatorAddress: SidechainDomainMainchainAddress;
 };
 
+export type Charli3OracleCorePalletNodeStakingInfo = {
+  stakeAmount: bigint;
+  state: Charli3OracleCorePalletOracleNodeStakingState;
+  stakeActivatedAt: number;
+  cardanoPkhAdmin: Bytes;
+  cardanoPkhAggregation: Bytes;
+};
+
+export type Charli3OracleCorePalletOracleNodeStakingState =
+  | 'Inactive'
+  | 'StakingApproved'
+  | 'ActiveStake'
+  | 'RetireStake'
+  | 'SlashVoting'
+  | 'SlashApproved'
+  | 'WithdrawApproved';
+
 /**
  * The `Error` enum of this pallet.
  **/
@@ -2324,7 +2587,47 @@ export type Charli3OracleCorePalletError =
   /**
    * Oracle node is not authorized to submit data
    **/
-  'UnauthorizedNode';
+  | 'UnauthorizedNode'
+  /**
+   * Invalid state for operation
+   **/
+  | 'InvalidNodeState'
+  /**
+   * Stake amount mismatch
+   **/
+  | 'StakeMismatch'
+  /**
+   * Slash amount invalid
+   **/
+  | 'SlashAmountInvalid'
+  /**
+   * Cannot vote for yourself
+   **/
+  | 'CannotVoteForSelf'
+  /**
+   * No active slash to vote on
+   **/
+  | 'NoActiveSlash'
+  /**
+   * Approved amount invalid
+   **/
+  | 'ApprovedAmountInvalid'
+  /**
+   * Amount mismatch on withdrawal
+   **/
+  | 'AmountMismatch'
+  /**
+   * Signing admin submitted different params than the existing proposal
+   **/
+  | 'ProposalMismatch'
+  /**
+   * This account has already signed this proposal
+   **/
+  | 'AlreadySigned'
+  /**
+   * Admin signature is invalid
+   **/
+  | 'InvalidAdminSignature';
 
 export type SpRuntimeExtrinsicInclusionMode = 'AllExtrinsics' | 'OnlyInherents';
 

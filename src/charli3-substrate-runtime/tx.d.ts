@@ -37,6 +37,7 @@ import type {
   Charli3OracleCorePalletOracleMessage,
   Charli3OracleCoreConfigNodeConsensusConfiguration,
   Charli3OracleCoreConfigNodeRewardConfiguration,
+  Charli3OracleCorePalletSlashVote,
 } from './types.js';
 
 export type ChainSubmittableExtrinsic<
@@ -1410,6 +1411,209 @@ export interface ChainTx<
           palletCall: {
             name: 'SudoDeregisterOracleNode';
             params: { oracleAccount: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     *
+     * @param {AccountId32Like} nodeAccount
+     * @param {bigint} stakeAmount
+     * @param {number} lockUntilBlock
+     * @param {BytesLike} cardanoPkhAdmin
+     * @param {BytesLike} cardanoPkhAggregation
+     * @param {FixedBytes<32>} adminPubkey
+     * @param {FixedBytes<64>} adminSig
+     **/
+    generateStakingCertificate: GenericTxCall<
+      (
+        nodeAccount: AccountId32Like,
+        stakeAmount: bigint,
+        lockUntilBlock: number,
+        cardanoPkhAdmin: BytesLike,
+        cardanoPkhAggregation: BytesLike,
+        adminPubkey: FixedBytes<32>,
+        adminSig: FixedBytes<64>,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Oracle';
+          palletCall: {
+            name: 'GenerateStakingCertificate';
+            params: {
+              nodeAccount: AccountId32Like;
+              stakeAmount: bigint;
+              lockUntilBlock: number;
+              cardanoPkhAdmin: BytesLike;
+              cardanoPkhAggregation: BytesLike;
+              adminPubkey: FixedBytes<32>;
+              adminSig: FixedBytes<64>;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     *
+     * @param {FixedBytes<32>} txHash
+     **/
+    confirmCardanoStake: GenericTxCall<
+      (txHash: FixedBytes<32>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Oracle';
+          palletCall: {
+            name: 'ConfirmCardanoStake';
+            params: { txHash: FixedBytes<32> };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     *
+     **/
+    requestRetire: GenericTxCall<
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Oracle';
+          palletCall: {
+            name: 'RequestRetire';
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     *
+     * @param {AccountId32Like} nodeAccount
+     * @param {number} lockUntilBlock
+     * @param {number} expiresAtBlock
+     **/
+    generateRetireCertificate: GenericTxCall<
+      (
+        nodeAccount: AccountId32Like,
+        lockUntilBlock: number,
+        expiresAtBlock: number,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Oracle';
+          palletCall: {
+            name: 'GenerateRetireCertificate';
+            params: {
+              nodeAccount: AccountId32Like;
+              lockUntilBlock: number;
+              expiresAtBlock: number;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     *
+     * @param {AccountId32Like} nodeAccount
+     * @param {bigint} slashAmount
+     **/
+    requestSlash: GenericTxCall<
+      (
+        nodeAccount: AccountId32Like,
+        slashAmount: bigint,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Oracle';
+          palletCall: {
+            name: 'RequestSlash';
+            params: { nodeAccount: AccountId32Like; slashAmount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     *
+     * @param {AccountId32Like} nodeAccount
+     * @param {Charli3OracleCorePalletSlashVote} vote
+     * @param {FixedBytes<32>} adminPubkey
+     * @param {FixedBytes<64>} adminSig
+     **/
+    voteSlash: GenericTxCall<
+      (
+        nodeAccount: AccountId32Like,
+        vote: Charli3OracleCorePalletSlashVote,
+        adminPubkey: FixedBytes<32>,
+        adminSig: FixedBytes<64>,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Oracle';
+          palletCall: {
+            name: 'VoteSlash';
+            params: {
+              nodeAccount: AccountId32Like;
+              vote: Charli3OracleCorePalletSlashVote;
+              adminPubkey: FixedBytes<32>;
+              adminSig: FixedBytes<64>;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     *
+     * @param {AccountId32Like} nodeAccount
+     * @param {FixedBytes<32>} adminPubkey
+     * @param {FixedBytes<64>} adminSig
+     **/
+    generateWithdrawalCertificate: GenericTxCall<
+      (
+        nodeAccount: AccountId32Like,
+        adminPubkey: FixedBytes<32>,
+        adminSig: FixedBytes<64>,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Oracle';
+          palletCall: {
+            name: 'GenerateWithdrawalCertificate';
+            params: {
+              nodeAccount: AccountId32Like;
+              adminPubkey: FixedBytes<32>;
+              adminSig: FixedBytes<64>;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
+    >;
+
+    /**
+     *
+     * @param {FixedBytes<32>} txHash
+     * @param {bigint} releasedAmount
+     * @param {bigint} penaltyAmount
+     **/
+    confirmCardanoWithdrawal: GenericTxCall<
+      (
+        txHash: FixedBytes<32>,
+        releasedAmount: bigint,
+        penaltyAmount: bigint,
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Oracle';
+          palletCall: {
+            name: 'ConfirmCardanoWithdrawal';
+            params: {
+              txHash: FixedBytes<32>;
+              releasedAmount: bigint;
+              penaltyAmount: bigint;
+            };
           };
         },
         ChainKnownTypes
